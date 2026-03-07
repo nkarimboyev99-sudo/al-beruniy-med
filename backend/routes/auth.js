@@ -1,0 +1,172 @@
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const { auth } = require('../middleware/auth');
+
+const router = express.Router();
+
+// Login
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username va parol kiritilishi shart' });
+        }
+
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(401).json({ message: 'Noto\'g\'ri username yoki parol' });
+        }
+
+        const isMatch = await user.comparePassword(password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Noto\'g\'ri username yoki parol' });
+        }
+
+        if (!user.isActive) {
+            return res.status(401).json({ message: 'Hisobingiz bloklangan' });
+        }
+
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            token,
+            user: {
+                id: user._id,
+                username: user.username,
+                fullName: user.fullName,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Get current user
+router.get('/me', auth, async (req, res) => {
+    res.json({ user: req.user });
+});
+
+// Register new user (admin only)
+router.post('/register', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Faqat admin yangi foydalanuvchi yarata oladi' });
+        }
+
+        const { username, password, fullName, role, phone } = req.body;
+
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Bu username allaqachon mavjud' });
+        }
+
+        const user = await User.create({
+            username,
+            password,
+            fullName,
+            role: role || 'doctor',
+            phone
+        });
+
+        res.status(201).json({
+            message: 'Foydalanuvchi yaratildi',
+            user: {
+                id: user._id,
+                username: user.username,
+                fullName: user.fullName,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Get all users (admin only)
+router.get('/users', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Faqat admin uchun' });
+        }
+
+        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Update user (admin only)
+router.put('/users/:id', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Faqat admin uchun' });
+        }
+
+        const { fullName, username, phone, role, isActive, password } = req.body;
+
+        const updateData = { fullName, username, phone, role, isActive };
+
+        // Agar yangi parol berilgan bo'lsa, uni ham yangilash
+        if (password && password.trim() !== '') {
+            const user = await User.findById(req.params.id);
+            if (user) {
+                user.password = password;
+                await user.save(); // Bu parolni hash qiladi
+            }
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Delete user (admin only)
+router.delete('/users/:id', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Faqat admin uchun' });
+        }
+
+        // O'zini o'chirmasligi uchun tekshiruv
+        if (req.user.id === req.params.id) {
+            return res.status(400).json({ message: 'O\'zingizni o\'chira olmaysiz' });
+        }
+
+        const user = await User.findByIdAndDelete(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });
+        }
+
+        res.json({ message: 'Foydalanuvchi o\'chirildi' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+module.exports = router;
