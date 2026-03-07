@@ -15,8 +15,8 @@ const diagnosisSchema = new mongoose.Schema({
         trim: true
     },
     category: {
-        type: mongoose.Schema.Types.Mixed,
-        default: 'other'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category'
     },
     recommendedMedicines: [{
         type: mongoose.Schema.Types.ObjectId,
