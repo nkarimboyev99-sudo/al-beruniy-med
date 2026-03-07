@@ -55,7 +55,7 @@ router.get('/search/autocomplete', auth, doctorOrAdmin, async (req, res) => {
             fullName: { $regex: q, $options: 'i' }
         })
             .select('_id fullName phone address gender birthDate')
-            .limit(10)
+            .limit(10000)
             .sort({ fullName: 1 });
 
         res.json(patients);

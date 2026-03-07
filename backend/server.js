@@ -36,7 +36,7 @@ app.use('/api/categories', categoryRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Lab Registr API is running' });
+    res.json({ status: 'OK', message: 'Al Beruniy Med API is running' });
 });
 
 // MongoDB connection
@@ -57,4 +57,16 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📍 API: http://localhost:${PORT}/api`);
+
+    // Render free tier uxlab qolmasligi uchun har 14 daqiqada o'ziga ping
+    if (process.env.RENDER_EXTERNAL_URL) {
+        const https = require('https');
+        setInterval(() => {
+            https.get(`${process.env.RENDER_EXTERNAL_URL}/api/health`, (res) => {
+                console.log(`🏓 Keep-alive ping: ${res.statusCode}`);
+            }).on('error', (err) => {
+                console.error('Keep-alive ping xatosi:', err.message);
+            });
+        }, 14 * 60 * 1000); // 14 daqiqa
+    }
 });
