@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import logoImg from '../../logo/logo.png'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     Users,
@@ -93,7 +92,7 @@ function AdminDashboard() {
             <aside className="admin-sidebar">
                 <div className="sidebar-header">
                     <div className="sidebar-logo">
-                        <img src={logoImg} alt="logo" className="sidebar-logo-img" />
+                        <img src="/logo.png" alt="logo" className="sidebar-logo-img" />
                         {sidebarOpen && <span className="logo-text">Al-Beruniy <span>Med</span></span>}
                     </div>
                 </div>

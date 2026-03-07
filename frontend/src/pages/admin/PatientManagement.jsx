@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logoImg from '../../logo/logo.png'
 import {
     UserPlus,
     Plus,
@@ -475,7 +474,7 @@ function PatientManagement() {
         const now = new Date()
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         const doctorName = user?.fullName || ''
-        const logoUrl = logoImg
+        const logoUrl = `${window.location.origin}/logo.png`
 
         const printWindow = window.open('', '_blank')
         if (!printWindow) { alert('Popup bloklandi! Brauzer manzil qatoridagi popup belgisiga bosing va ruxsat bering.'); return }
@@ -691,7 +690,7 @@ function PatientManagement() {
         const rows = diagnosis.results.rows.filter(r =>
             Object.values(r.values || {}).some(v => v && v.trim())
         )
-        const logoUrl = logoImg
+        const logoUrl = `${window.location.origin}/logo.png`
         const titleDate = `${now.toLocaleDateString('ru-RU')} ${now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`
 
         const printWindow = window.open('', '_blank')
@@ -775,7 +774,7 @@ function PatientManagement() {
         const now = new Date()
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         const doctorName = user?.fullName || ''
-        const logoUrl = logoImg
+        const logoUrl = `${window.location.origin}/logo.png`
 
         const categoriesHTML = allCats.map((category, catIdx) => {
             const columns = category.columns || []
@@ -1629,7 +1628,7 @@ function PatientManagement() {
         const clinicName = clinic.clinicName || 'Al-Beruniy Med'
         const clinicAddress = clinic.address || ''
         const clinicPhone = clinic.phone || ''
-        const logoUrl = logoImg
+        const logoUrl = `${window.location.origin}/logo.png`
 
         const savedDiscount = diagnosis.discount || 0
         const savedTotal = diagnosis.totalAmount || 0
@@ -1813,7 +1812,7 @@ function PatientManagement() {
 
         const grandTotal = categoriesTotal + medicinesTotal
 
-        const logoUrl = logoImg
+        const logoUrl = `${window.location.origin}/logo.png`
         const payMethodLabel = { cash: "Naqd pul", card: "Karta", transfer: "O'tkazma" }[payment.paymentMethod] || payment.paymentMethod
 
         const printWindow = window.open('', '_blank')
