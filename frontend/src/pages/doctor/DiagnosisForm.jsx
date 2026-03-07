@@ -84,7 +84,10 @@ function DiagnosisForm() {
             const genderOk = r.gender === 'both' || r.gender === gender
             return ageOk && genderOk
         })
-        return match?.price > 0 ? match.price : (diagnosis.price || 0)
+        const categoryPrice = diagnosis?.category?.price || 0
+        if (match?.price > 0) return match.price
+        if (diagnosis.price > 0) return diagnosis.price
+        return categoryPrice
     }
 
     const toggleDiagnosis = (d) => {

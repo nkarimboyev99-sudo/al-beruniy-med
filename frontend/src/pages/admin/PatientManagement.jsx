@@ -294,11 +294,12 @@ function PatientManagement() {
         const allCategoryTables = patientDiagnoses.map(diagnosis => {
             const saved = diagnosis.results
             const cols = (saved?.columns?.length > 0) ? saved.columns : [...defaultColumns]
+            const categoryName = diagnosis.diagnosis?.category?.name || diagnosis.diagnosisName || 'Natija'
             return {
                 diagnosisId: diagnosis._id,
                 diagnosisName: diagnosis.diagnosisName || 'Kategoriya',
                 createdAt: diagnosis.createdAt,
-                title: saved?.title || diagnosis.diagnosisName || 'Natija',
+                title: saved?.title || categoryName,
                 columns: cols,
                 rows: buildAutoRows(diagnosis.diagnosisName, null, saved?.rows || [], cols),
                 conclusion: saved?.conclusion || '',
@@ -319,10 +320,11 @@ function PatientManagement() {
         const cols = [...defaultColumns]
         const rows = buildAutoRows(diagnosis.diagnosisName, null, saved?.rows || [], cols)
 
+        const categoryName = diagnosis.diagnosis?.category?.name || diagnosis.diagnosisName || 'Natija'
         setCategoryResultsAndRef([{
             diagnosisId: diagnosis._id,
             diagnosisName: diagnosis.diagnosisName || 'Kategoriya',
-            title: diagnosis.diagnosisName || 'Natija',
+            title: categoryName,
             columns: cols,
             rows,
             conclusion: saved?.conclusion || '',
@@ -989,12 +991,13 @@ function PatientManagement() {
             const diagnoses = res.ok ? await res.json() : []
             if (!diagnoses.length) { alert('Bu bemorda hali analizlar yo\'q!'); return }
             const tables = diagnoses.map(d => {
+                const catName = d.diagnosis?.category?.name || d.diagnosisName || 'Natija'
                 if (d.results?.rows?.length > 0) {
                     return {
                         diagnosisId: d._id,
                         diagnosisName: d.diagnosisName || 'Kategoriya',
                         createdAt: d.createdAt,
-                        title: d.results.title || d.diagnosisName || 'Natija',
+                        title: d.results.title || catName,
                         columns: (d.results.columns?.length > 0) ? d.results.columns : [...defaultColumns],
                         rows: d.results.rows.map((r, i) => ({ id: Date.now() + i + Math.random(), values: r.values || {} })),
                         conclusion: d.results.conclusion || ''
@@ -1005,7 +1008,7 @@ function PatientManagement() {
                     diagnosisId: d._id,
                     diagnosisName: d.diagnosisName || 'Kategoriya',
                     createdAt: d.createdAt,
-                    title: d.results?.title || d.diagnosisName || 'Natija',
+                    title: d.results?.title || catName,
                     columns: dCols,
                     rows: buildAutoRows(d.diagnosisName, patient, d.results?.rows || [], dCols),
                     conclusion: d.results?.conclusion || ''
@@ -1122,7 +1125,11 @@ function PatientManagement() {
             })
         }
         if (!found) found = diagnosis.normalRanges[0]
-        return found?.price ?? diagnosis?.price ?? 0
+        const categoryPrice = diagnosis?.category?.price || 0
+        const rangePrice = found?.price ?? null
+        if (rangePrice !== null && rangePrice > 0) return rangePrice
+        if (diagnosis?.price > 0) return diagnosis.price
+        return categoryPrice
     }
 
     // Category helper funksiyalar (doctor uslubida)

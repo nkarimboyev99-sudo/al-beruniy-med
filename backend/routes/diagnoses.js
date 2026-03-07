@@ -9,6 +9,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
         const diagnoses = await Diagnosis.find({ isActive: true })
             .populate('recommendedMedicines')
+            .populate('category', 'name price')
             .sort({ name: 1 });
 
         res.json(diagnoses);
@@ -21,7 +22,8 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
 router.get('/:id', auth, doctorOrAdmin, async (req, res) => {
     try {
         const diagnosis = await Diagnosis.findById(req.params.id)
-            .populate('recommendedMedicines');
+            .populate('recommendedMedicines')
+            .populate('category', 'name price');
 
         if (!diagnosis) {
             return res.status(404).json({ message: 'Tashxis topilmadi' });

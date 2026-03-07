@@ -12,7 +12,7 @@ router.get('/patient/:patientId', auth, doctorOrAdmin, async (req, res) => {
             patient: req.params.patientId,
             isActive: true
         })
-            .populate('diagnosis')
+            .populate({ path: 'diagnosis', populate: { path: 'category', select: 'name price' } })
             .populate('doctor', 'fullName username')
             .populate('medicines.medicine', 'name')
             .sort({ createdAt: -1 });
