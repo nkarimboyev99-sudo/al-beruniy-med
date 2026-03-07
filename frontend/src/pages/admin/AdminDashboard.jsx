@@ -92,7 +92,7 @@ function AdminDashboard() {
             <aside className="admin-sidebar">
                 <div className="sidebar-header">
                     <div className="sidebar-logo">
-                        <img src="/src/logo/logo.png" alt="logo" className="sidebar-logo-img" />
+                        <img src="/logo.png" alt="logo" className="sidebar-logo-img" />
                         {sidebarOpen && <span className="logo-text">Al-Beruniy <span>Med</span></span>}
                     </div>
                 </div>
