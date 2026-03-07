@@ -294,12 +294,12 @@ function PatientManagement() {
         const allCategoryTables = patientDiagnoses.map(diagnosis => {
             const saved = diagnosis.results
             const cols = (saved?.columns?.length > 0) ? saved.columns : [...defaultColumns]
-            const categoryName = diagnosis.diagnosis?.category?.name || diagnosis.diagnosisName || 'Natija'
+            const categoryName = diagnosis.diagnosis?.category?.name || diagnosis.diagnosisName?.split(',')[0]?.trim() || 'Natija'
             return {
                 diagnosisId: diagnosis._id,
                 diagnosisName: diagnosis.diagnosisName || 'Kategoriya',
                 createdAt: diagnosis.createdAt,
-                title: saved?.title || categoryName,
+                title: categoryName,
                 columns: cols,
                 rows: buildAutoRows(diagnosis.diagnosisName, null, saved?.rows || [], cols),
                 conclusion: saved?.conclusion || '',
@@ -320,7 +320,7 @@ function PatientManagement() {
         const cols = [...defaultColumns]
         const rows = buildAutoRows(diagnosis.diagnosisName, null, saved?.rows || [], cols)
 
-        const categoryName = diagnosis.diagnosis?.category?.name || diagnosis.diagnosisName || 'Natija'
+        const categoryName = diagnosis.diagnosis?.category?.name || diagnosis.diagnosisName?.split(',')[0]?.trim() || 'Natija'
         setCategoryResultsAndRef([{
             diagnosisId: diagnosis._id,
             diagnosisName: diagnosis.diagnosisName || 'Kategoriya',
@@ -550,10 +550,9 @@ function PatientManagement() {
             position: relative;
         }
         .print-title {
-            font-size: 14pt;
-            font-weight: 900;
+            font-size: 10pt;
+            font-weight: 700;
             text-align: center;
-            text-transform: uppercase;
         }
         .print-title-date {
             position: absolute;
@@ -991,13 +990,13 @@ function PatientManagement() {
             const diagnoses = res.ok ? await res.json() : []
             if (!diagnoses.length) { alert('Bu bemorda hali analizlar yo\'q!'); return }
             const tables = diagnoses.map(d => {
-                const catName = d.diagnosis?.category?.name || d.diagnosisName || 'Natija'
+                const catName = d.diagnosis?.category?.name || d.diagnosisName?.split(',')[0]?.trim() || 'Natija'
                 if (d.results?.rows?.length > 0) {
                     return {
                         diagnosisId: d._id,
                         diagnosisName: d.diagnosisName || 'Kategoriya',
                         createdAt: d.createdAt,
-                        title: d.results.title || catName,
+                        title: catName,
                         columns: (d.results.columns?.length > 0) ? d.results.columns : [...defaultColumns],
                         rows: d.results.rows.map((r, i) => ({ id: Date.now() + i + Math.random(), values: r.values || {} })),
                         conclusion: d.results.conclusion || ''
@@ -1008,7 +1007,7 @@ function PatientManagement() {
                     diagnosisId: d._id,
                     diagnosisName: d.diagnosisName || 'Kategoriya',
                     createdAt: d.createdAt,
-                    title: d.results?.title || catName,
+                    title: catName,
                     columns: dCols,
                     rows: buildAutoRows(d.diagnosisName, patient, d.results?.rows || [], dCols),
                     conclusion: d.results?.conclusion || ''
