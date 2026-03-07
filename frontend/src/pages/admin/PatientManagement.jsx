@@ -1100,7 +1100,8 @@ function PatientManagement() {
 
     // Bemorning yoshiga va jinsiga qarab normalRanges dan narxni topish
     const getPriceForPatient = (diagnosis) => {
-        if (!diagnosis?.normalRanges?.length) return diagnosis?.price || 0
+        const categoryPrice = diagnosis?.category?.price || 0
+        if (!diagnosis?.normalRanges?.length) return diagnosis?.price || categoryPrice
         let age = null
         if (selectedPatient?.birthDate) {
             const today = new Date(), birth = new Date(selectedPatient.birthDate)
@@ -1125,9 +1126,8 @@ function PatientManagement() {
             })
         }
         if (!found) found = diagnosis.normalRanges[0]
-        const categoryPrice = diagnosis?.category?.price || 0
-        const rangePrice = found?.price ?? null
-        if (rangePrice !== null && rangePrice > 0) return rangePrice
+        const rangePrice = found?.price ?? 0
+        if (rangePrice > 0) return rangePrice
         if (diagnosis?.price > 0) return diagnosis.price
         return categoryPrice
     }

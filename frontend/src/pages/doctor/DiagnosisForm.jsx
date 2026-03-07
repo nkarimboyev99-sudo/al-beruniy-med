@@ -74,7 +74,8 @@ function DiagnosisForm() {
     }
 
     const getPriceForPatient = (diagnosis) => {
-        if (!diagnosis.normalRanges || !diagnosis.normalRanges.length) return diagnosis.price || 0
+        const categoryPrice = diagnosis?.category?.price || 0
+        if (!diagnosis.normalRanges || !diagnosis.normalRanges.length) return diagnosis.price || categoryPrice
         const ageYears = getAgeNum(patient?.birthDate)
         const gender = patient?.gender
         const match = diagnosis.normalRanges.find(r => {
@@ -84,7 +85,6 @@ function DiagnosisForm() {
             const genderOk = r.gender === 'both' || r.gender === gender
             return ageOk && genderOk
         })
-        const categoryPrice = diagnosis?.category?.price || 0
         if (match?.price > 0) return match.price
         if (diagnosis.price > 0) return diagnosis.price
         return categoryPrice
