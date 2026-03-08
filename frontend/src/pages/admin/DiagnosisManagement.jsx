@@ -195,7 +195,7 @@ function DiagnosisManagement() {
             name: diagnosis.name || '',
             code: diagnosis.code || '',
             description: diagnosis.description || '',
-            category: diagnosis.category || 'blood',
+            category: (diagnosis.category?._id || diagnosis.category) || '',
             normalRanges: diagnosis.normalRanges || [],
             price: diagnosis.price || 0
         })
