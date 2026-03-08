@@ -713,8 +713,6 @@ function DiagnosisManagement() {
                                                     <tr key={idx}>
                                                         <td>
                                                             {(() => {
-                                                                const prevRow = formData.normalRanges[idx - 1]
-                                                                const isLocked = idx > 0 && prevRow && prevRow.gender === 'both'
                                                                 return (
                                                                     <input
                                                                         type="text"
@@ -723,9 +721,7 @@ function DiagnosisManagement() {
                                                                         placeholder="0"
                                                                         maxLength={3}
                                                                         value={row.ageMin}
-                                                                        readOnly={isLocked}
-                                                                        style={isLocked ? { background: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' } : {}}
-                                                                        onChange={isLocked ? undefined : e => {
+                                                                        onChange={e => {
                                                                             const val = e.target.value.replace(/\D/g, '').slice(0, 3)
                                                                             updateNormaRow(idx, 'ageMin', val)
                                                                         }}
