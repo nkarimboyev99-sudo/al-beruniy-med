@@ -399,6 +399,28 @@ function DiagnosisManagement() {
                 </div>
             </div>
 
+            {/* Search bar — always visible */}
+            <div className="toolbar glass-card" style={{ marginBottom: '20px' }}>
+                <div className="search-input">
+                    <Search size={18} />
+                    <input
+                        type="text"
+                        placeholder={selectedCategory ? `${selectedCategory.name} ichida qidirish...` : 'Barcha analizlardan qidirish...'}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    {searchTerm && (
+                        <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '4px' }}>
+                            <X size={16} />
+                        </button>
+                    )}
+                </div>
+                <div className="toolbar-info">
+                    <Stethoscope size={16} />
+                    <span>{(selectedCategory || searchTerm) ? `${filteredDiagnoses.length} ta` : `Jami: ${diagnoses.length} ta`}</span>
+                </div>
+            </div>
+
             {/* Category Grid — only when no category selected and no search */}
             {!selectedCategory && !searchTerm && (
                 <div className="dm-category-grid">
@@ -440,28 +462,6 @@ function DiagnosisManagement() {
                     )}
                 </div>
             )}
-
-            {/* Search bar — always visible */}
-            <div className="toolbar glass-card" style={{ marginBottom: '20px' }}>
-                <div className="search-input">
-                    <Search size={18} />
-                    <input
-                        type="text"
-                        placeholder={selectedCategory ? `${selectedCategory.name} ichida qidirish...` : 'Barcha analizlardan qidirish...'}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    {searchTerm && (
-                        <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '4px' }}>
-                            <X size={16} />
-                        </button>
-                    )}
-                </div>
-                <div className="toolbar-info">
-                    <Stethoscope size={16} />
-                    <span>{(selectedCategory || searchTerm) ? `${filteredDiagnoses.length} ta` : `Jami: ${diagnoses.length} ta`}</span>
-                </div>
-            </div>
 
             {/* Diagnoses Cards — shown when category selected or searching */}
             {(selectedCategory || searchTerm) && (
