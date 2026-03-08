@@ -108,7 +108,10 @@ function DiagnosisForm() {
     }
 
     const getDiagnosesByCategory = (categoryId) => {
-        return diagnosesList.filter(d => d.category === categoryId)
+        return diagnosesList.filter(d => {
+            const catId = d.category?._id || d.category
+            return catId?.toString() === categoryId?.toString()
+        })
     }
 
     const getSelectedCountByCategory = (categoryId) => {
