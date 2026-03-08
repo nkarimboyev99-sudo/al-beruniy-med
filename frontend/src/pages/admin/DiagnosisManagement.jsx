@@ -314,7 +314,7 @@ function DiagnosisManagement() {
     const filteredDiagnoses = diagnoses.filter(d => {
         const matchSearch = d.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             d.code?.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchCat = selectedCategory ? d.category === selectedCategory._id : true
+        const matchCat = selectedCategory ? (d.category?._id || d.category)?.toString() === selectedCategory._id?.toString() : true
         return matchSearch && matchCat
     })
 
