@@ -465,14 +465,32 @@ function PatientManagement() {
     // Chop etish va saqlash
     const handlePrintAndSaveResults = () => {
         // Avval joriy holatdan chop et (save kutmasdan)
-        const cat = categoryResultsRef.current[currentCategoryIndex]
-        if (!cat) return
-        const columns = (cat.columns?.length > 0) ? cat.columns : defaultColumns
-        const rows = (cat.rows || []).filter(r =>
-            Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
-        )
-        if (rows.length === 0) { alert('Bu analiz uchun natijalar kiritilmagan!'); return }
+        const allCats = categoryResultsRef.current
+        if (!allCats || allCats.length === 0) return
 
+        // Barcha kategoriyalarning qatorlarini birlashtirib chiqarish
+        const allRows = []
+        const firstCols = (allCats[0]?.columns?.length > 0) ? allCats[0].columns : defaultColumns
+        allCats.forEach(cat => {
+            const cols = (cat.columns?.length > 0) ? cat.columns : defaultColumns
+            const filtered = (cat.rows || []).filter(r =>
+                Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
+            )
+            filtered.forEach(row => {
+                // Ustun ID larini birinchi kategoriya ustunlariga moslashtirish
+                const mapped = {}
+                firstCols.forEach((col, ci) => {
+                    mapped[col.id] = row.values?.[cols[ci]?.id] || ''
+                })
+                allRows.push({ ...row, values: mapped })
+            })
+        })
+
+        const columns = firstCols
+        const rows = allRows
+        if (rows.length === 0) { alert('Natijalar kiritilmagan!'); return }
+
+        const cat = allCats[currentCategoryIndex] || allCats[0]
         const now = new Date()
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         const doctorName = user?.fullName || ''
@@ -490,7 +508,7 @@ function PatientManagement() {
             <div class="print-title-row">
                 <div class="print-title">${cat.title || 'LABORATORIYA TAHLILI'}</div>
             </div>
-            ${buildTableHTML(columns, rows)}
+            ${buildTableHTML(columns, rows, true)}
             <div class="print-footer">
                 <span class="doctor-label">Врач:</span> <span class="doctor-name">${doctorName}</span>
             </div>
