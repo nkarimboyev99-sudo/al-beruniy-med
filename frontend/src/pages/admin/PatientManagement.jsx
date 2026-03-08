@@ -477,12 +477,12 @@ function PatientManagement() {
                 Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
             )
             filtered.forEach(row => {
-                // Ustun ID larini birinchi kategoriya ustunlariga moslashtirish
                 const mapped = {}
                 firstCols.forEach((col, ci) => {
                     mapped[col.id] = row.values?.[cols[ci]?.id] || ''
                 })
-                allRows.push({ ...row, values: mapped })
+                // Kategoriya nomini to'g'ridan-to'g'ri teglash
+                allRows.push({ ...row, values: mapped, _catName: cat.title || '—' })
             })
         })
 
@@ -661,12 +661,10 @@ function PatientManagement() {
         const nameColId = colIds[0]
 
         if (groupByCategory) {
-            // Qatorlarni kategoriya bo'yicha guruhlash
+            // Qatorlarni kategoriya bo'yicha guruhlash (_catName tegidan foydalanish)
             const groups = []
             rows.forEach(row => {
-                const analysisName = row.values?.[nameColId] || ''
-                const diagMatch = diagnosesList.find(d => d.name === analysisName)
-                const catName = diagMatch?.category?.name || diagMatch?.category || '—'
+                const catName = row._catName || '—'
                 const last = groups[groups.length - 1]
                 if (last && last.catName === catName) {
                     last.rows.push(row)
@@ -743,9 +741,10 @@ function PatientManagement() {
             { id: 'col_3', name: 'Норма' },
             { id: 'col_4', name: 'Ед.' }
         ]
+        const catName = diagnosis.diagnosis?.category?.name || diagnosis.results?.title || '—'
         const rows = diagnosis.results.rows.filter(r =>
             Object.values(r.values || {}).some(v => v && v.trim())
-        )
+        ).map(r => ({ ...r, _catName: catName }))
         const logoUrl = `${window.location.origin}/logo.png`
         const titleDate = `${now.toLocaleDateString('ru-RU')} ${now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`
 
