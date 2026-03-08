@@ -634,14 +634,39 @@ function PatientManagement() {
         </div>
     `
 
-    // Jadval HTML yaratish
-    const buildTableHTML = (columns, rows) => {
+    // Jadval HTML yaratish (groupByCategory=true bo'lsa kategoriya sarlavhalari qo'shiladi)
+    const buildTableHTML = (columns, rows, groupByCategory = false) => {
         const colIds = columns.map(c => c.id)
-        // 2-ustun (index 1) — natija, 3-ustun (index 2) — norma (agar mavjud)
         const resultColId = colIds[1]
         const normaColId  = colIds[2] || null
-        // Ustunlar soniga qarab dinamik kenglik
         const colW = `${(100 / columns.length).toFixed(1)}%`
+        const nameColId = colIds[0]
+
+        // Kategoriya sarlavhasi bilan qatorlar yaratish
+        let bodyRows = ''
+        if (groupByCategory) {
+            let lastCatName = null
+            rows.forEach(row => {
+                const analysisName = row.values?.[nameColId] || ''
+                const diagMatch = diagnosesList.find(d => d.name === analysisName)
+                const catName = diagMatch?.category?.name || diagMatch?.category || null
+                if (catName && catName !== lastCatName) {
+                    lastCatName = catName
+                    bodyRows += `<tr class="category-header-row"><td colspan="${columns.length}" style="background:#e8f0fe;font-weight:700;font-size:0.82rem;padding:5px 8px;color:#1a3c8f;border-bottom:1px solid #c5d5f5;">${catName}</td></tr>`
+                }
+                const resultVal = row.values?.[resultColId] || ''
+                const normaVal  = normaColId ? (row.values?.[normaColId] || '') : ''
+                const isOut = normaVal && resultVal && resultVal.trim() !== normaVal.trim()
+                bodyRows += `<tr class="${isOut ? 'out-of-range' : ''}">${columns.map((col, ci) => `<td class="${ci === 1 ? 'result-val' : ''}">${row.values?.[col.id] || ''}</td>`).join('')}</tr>`
+            })
+        } else {
+            bodyRows = rows.map(row => {
+                const resultVal = row.values?.[resultColId] || ''
+                const normaVal  = normaColId ? (row.values?.[normaColId] || '') : ''
+                const isOut = normaVal && resultVal && resultVal.trim() !== normaVal.trim()
+                return `<tr class="${isOut ? 'out-of-range' : ''}">${columns.map((col, ci) => `<td class="${ci === 1 ? 'result-val' : ''}">${row.values?.[col.id] || ''}</td>`).join('')}</tr>`
+            }).join('')
+        }
 
         return `
             <table class="results-table">
@@ -653,21 +678,7 @@ function PatientManagement() {
                         ${columns.map(col => `<th>${col.name}</th>`).join('')}
                     </tr>
                 </thead>
-                <tbody>
-                    ${rows.map(row => {
-                        const resultVal = row.values?.[resultColId] || ''
-                        const normaVal  = normaColId ? (row.values?.[normaColId] || '') : ''
-                        // Natija normadan farq qilsa qizil
-                        const isOut = normaVal && resultVal && resultVal.trim() !== normaVal.trim()
-                        return `
-                            <tr class="${isOut ? 'out-of-range' : ''}">
-                                ${columns.map((col, ci) =>
-                                    `<td class="${ci === 1 ? 'result-val' : ''}">${row.values?.[col.id] || ''}</td>`
-                                ).join('')}
-                            </tr>
-                        `
-                    }).join('')}
-                </tbody>
+                <tbody>${bodyRows}</tbody>
             </table>
         `
     }
@@ -705,7 +716,7 @@ function PatientManagement() {
             <div class="print-title-row">
                 <div class="print-title">${diagnosis.results.title || 'LABORATORIYA TAHLILI'}</div>
             </div>
-            ${buildTableHTML(columns, rows)}
+            ${buildTableHTML(columns, rows, true)}
             ${diagnosis.results.conclusion ? `
                 <div class="print-conclusion">
                     <b>Xulosa:</b>${diagnosis.results.conclusion}
