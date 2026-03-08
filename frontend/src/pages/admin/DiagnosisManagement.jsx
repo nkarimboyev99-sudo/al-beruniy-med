@@ -294,7 +294,10 @@ function DiagnosisManagement() {
     }
 
     const getCategoryCount = (categoryId) => {
-        return diagnoses.filter(d => d.category === categoryId).length
+        return diagnoses.filter(d => {
+            const catId = d.category?._id || d.category
+            return catId?.toString() === categoryId?.toString()
+        }).length
     }
 
     const catColors = [

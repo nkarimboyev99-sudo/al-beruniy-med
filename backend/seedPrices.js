@@ -27,6 +27,24 @@ const categoryPrices = [
     { name: 'Опухолевые маркеры',                                                                price: 90000  },
     { name: 'TORCH инфекции',                                                                    price: 50000  },
     { name: 'Тропонин I (количественный)',                                                       price: 50000  },
+
+    // Yangi kategoriyalar (skrinshotdan)
+    { name: 'Общий анализ крови',                                                                price: 40000  },
+    { name: 'Время свертывания крови',                                                           price: 15000  },
+    { name: 'Группа крови и резус-фактор',                                                       price: 50000  },
+    { name: 'Анализ крови на гликолизированный гемоглобин',                                      price: 90000  },
+    { name: 'Анализ на вирусный гепатит',                                                        price: 45000  },
+    { name: 'Экспресс тест анализ на RW',                                                        price: 45000  },
+    { name: 'Определение Антитела к коронавирусу SARS-COV-2(COVID-19)',                          price: 50000  },
+    { name: 'Коагулограмма',                                                                     price: 50000  },
+    { name: 'Анализы на прокальцитонин и ферритин',                                              price: 30000  },
+    { name: 'Анализ минерального обмена',                                                        price: 30000  },
+    { name: 'Липидный спектр',                                                                   price: 35000  },
+    { name: 'Общий анализ мочи',                                                                 price: 30000  },
+    { name: 'Микроскопия осадка мочи',                                                           price: 30000  },
+    { name: 'Мазок из уретры (мужской)',                                                         price: 50000  },
+    { name: 'Общеклинические исследование секрета предстательной железы',                        price: 50000  },
+    { name: 'Биохимический анализ крови',                                                        price: 30000  },
 ];
 
 // Diagnosis кодига кўра алохида нарxлар
@@ -55,6 +73,65 @@ const diagnosisPrices = [
     { code: 'TORCH-BRUS',   price: 65000  },
     // Д-димер
     { code: 'DDIM-01',      price: 150000 },
+
+    // Биохимия
+    { code: 'ALT',          price: 30000  },
+    { code: 'AST',          price: 30000  },
+    { code: 'BILI-TOT',     price: 35000  },
+    { code: 'BILI-DIR',     price: 35000  },
+    { code: 'BILI-IND',     price: 35000  },
+    { code: 'TP',           price: 30000  },
+    { code: 'CREAT',        price: 30000  },
+    { code: 'UREA',         price: 30000  },
+    { code: 'AMYL',         price: 30000  },
+    { code: 'UA',           price: 30000  },
+    { code: 'ALB',          price: 30000  },
+    { code: 'GLU-BIO',      price: 25000  },
+
+    // Прокальцитонин ва Ферритин
+    { code: 'PCT',          price: 120000 },
+    { code: 'FERR',         price: 30000  },
+
+    // Вирусный гепатит
+    { code: 'HBSAG',        price: 45000  },
+    { code: 'ANTI-HCV',     price: 45000  },
+    { code: 'ANTI-HAV',     price: 50000  },
+    { code: 'TR-PALL',      price: 45000  },
+
+    // Ревматоидные факторы (качественный)
+    { code: 'RF',           price: 25000  },
+    { code: 'ASL',          price: 25000  },
+    { code: 'CRP',          price: 25000  },
+
+    // Ревматоидные факторы (количественный)
+    { code: 'CRP-Q',        price: 35000  },
+    { code: 'RF-Q',         price: 35000  },
+    { code: 'ASL-Q',        price: 35000  },
+
+    // Липидный спектр
+    { code: 'CHOL-TOT',     price: 35000  },
+    { code: 'CHOL-LDL',     price: 35000  },
+    { code: 'CHOL-HDL',     price: 35000  },
+    { code: 'CHOL-VLDL',    price: 35000  },
+    { code: 'ATHER',        price: 35000  },
+    { code: 'TG',           price: 35000  },
+
+    // Минеральный обмен (электролиты)
+    { code: 'MIN-NA',       price: 35000  },
+    { code: 'MIN-K',        price: 35000  },
+    { code: 'MIN-PH',       price: 30000  },
+    { code: 'MIN-CA',       price: 30000  },
+    { code: 'MIN-MG',       price: 30000  },
+    { code: 'MIN-FE',       price: 30000  },
+
+    // Коагулограмма
+    { code: 'APTT',         price: 50000  },
+    { code: 'APTT-RATIO',   price: 50000  },
+    { code: 'PTI',          price: 50000  },
+    { code: 'PT',           price: 50000  },
+    { code: 'INR',          price: 50000  },
+    { code: 'TT',           price: 50000  },
+    { code: 'DDIMER',       price: 150000 },
 ];
 
 async function seed() {
