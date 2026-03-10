@@ -2431,13 +2431,15 @@ function PatientManagement({ readOnly = false }) {
                         <p className="pm-subtitle">Bemorlar ro'yxatini boshqarish</p>
                     </div>
                 </div>
-                <button className="pm-add-btn" onClick={() => {
-                    const base = getBase()
-                    navigate(`${base}/patients/add`)
-                }}>
-                    <Plus size={18} />
-                    Yangi bemor
-                </button>
+                {getBase() !== '/doctor' && (
+                    <button className="pm-add-btn" onClick={() => {
+                        const base = getBase()
+                        navigate(`${base}/patients/add`)
+                    }}>
+                        <Plus size={18} />
+                        Yangi bemor
+                    </button>
+                )}
             </div>
 
             {/* Stats */}
