@@ -6,6 +6,7 @@ import {
     Save, Check, X
 } from 'lucide-react'
 import '../admin/DataManagement.css'
+import '../admin/rfp.css'
 
 const PAGE_SIZE = 25
 
