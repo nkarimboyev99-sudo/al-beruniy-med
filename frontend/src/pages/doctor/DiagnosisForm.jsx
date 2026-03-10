@@ -12,7 +12,11 @@ import logoSrc from '../../logo/logo.png'
 function DiagnosisForm() {
     const { patientId } = useParams()
     const navigate = useNavigate()
-    const basePath = window.location.pathname.startsWith('/admin') ? '/admin' : '/doctor'
+    const basePath = window.location.pathname.startsWith('/admin')
+        ? '/admin'
+        : window.location.pathname.startsWith('/registrator')
+            ? '/registrator'
+            : '/doctor'
 
     const [patient, setPatient] = useState(null)
     const [diagnosesList, setDiagnosesList] = useState([])
