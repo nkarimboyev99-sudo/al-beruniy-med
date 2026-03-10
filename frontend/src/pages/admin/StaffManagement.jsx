@@ -9,7 +9,10 @@ import {
     Check,
     UserPlus,
     Save,
-    Eye
+    Eye,
+    Activity,
+    Calendar,
+    Phone
 } from 'lucide-react'
 import './DataManagement.css'
 
@@ -19,6 +22,10 @@ function StaffManagement() {
     const [showModal, setShowModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [showViewModal, setShowViewModal] = useState(false)
+    const [showActivitiesModal, setShowActivitiesModal] = useState(false)
+    const [activities, setActivities] = useState([])
+    const [activitiesLoading, setActivitiesLoading] = useState(false)
+    const [activitySearch, setActivitySearch] = useState('')
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [selectedStaff, setSelectedStaff] = useState(null)
     const [searchTerm, setSearchTerm] = useState('')
@@ -67,6 +74,35 @@ function StaffManagement() {
         if (role === 'doctor') return 'Doktor'
         if (role === 'registrator') return 'Registratsiya'
         return role
+    }
+
+    const getPaymentLabel = (method) => {
+        if (method === 'cash') return 'Naqd'
+        if (method === 'card') return 'Karta'
+        if (method === 'transfer') return "O'tkazma"
+        return method
+    }
+
+    const handleViewActivities = async (member) => {
+        setSelectedStaff(member)
+        setActivities([])
+        setActivitySearch('')
+        setActivitiesLoading(true)
+        setShowActivitiesModal(true)
+        try {
+            const token = localStorage.getItem('token')
+            const response = await fetch(`/api/auth/users/${member._id}/activities`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setActivities(data.activities)
+            }
+        } catch (error) {
+            console.error('Error fetching activities:', error)
+        } finally {
+            setActivitiesLoading(false)
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -264,8 +300,8 @@ function StaffManagement() {
                                         <div className="action-buttons">
                                             <button
                                                 className="action-btn view"
-                                                title="Ko'rish"
-                                                onClick={() => { setSelectedStaff(member); setShowViewModal(true); }}
+                                                title="Amaliyotlarni ko'rish"
+                                                onClick={() => handleViewActivities(member)}
                                             >
                                                 <Eye size={16} />
                                             </button>
@@ -291,6 +327,107 @@ function StaffManagement() {
                     </table>
                 )}
             </div>
+
+            {/* Activities Modal */}
+            {showActivitiesModal && selectedStaff && (
+                <div className="modal-overlay" onClick={() => setShowActivitiesModal(false)}>
+                    <div className="modal glass-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '750px', width: '95%' }}>
+                        <div className="modal-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Activity size={22} />
+                                <div>
+                                    <h2 style={{ margin: 0 }}>{selectedStaff.fullName} — Amaliyotlar</h2>
+                                    <small style={{ color: 'var(--text-secondary)' }}>{getRoleLabel(selectedStaff.role)}</small>
+                                </div>
+                            </div>
+                            <button className="modal-close" onClick={() => setShowActivitiesModal(false)}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div style={{ padding: '1rem 1.5rem' }}>
+                            <div className="search-input" style={{ marginBottom: '1rem' }}>
+                                <Search size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Bemor ismi bo'yicha qidirish..."
+                                    value={activitySearch}
+                                    onChange={(e) => setActivitySearch(e.target.value)}
+                                />
+                            </div>
+
+                            {activitiesLoading ? (
+                                <div className="loading-state">
+                                    <div className="spinner"></div>
+                                    <p>Yuklanmoqda...</p>
+                                </div>
+                            ) : activities.length === 0 ? (
+                                <div className="empty-state" style={{ padding: '2rem' }}>
+                                    <Activity size={40} />
+                                    <h3>Amaliyotlar topilmadi</h3>
+                                </div>
+                            ) : (
+                                <>
+                                    <p style={{ marginBottom: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                        Jami: <strong>{activities.length}</strong> ta amaliyot
+                                    </p>
+                                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                                        <table className="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Bemor</th>
+                                                    <th>Telefon</th>
+                                                    <th>{selectedStaff.role === 'doctor' ? 'Analiz' : 'Harakat'}</th>
+                                                    {selectedStaff.role === 'doctor' && <th>Summa</th>}
+                                                    {selectedStaff.role === 'doctor' && <th>To'lov</th>}
+                                                    <th>Sana</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {activities
+                                                    .filter(a => a.patientName.toLowerCase().includes(activitySearch.toLowerCase()))
+                                                    .map((a, i) => (
+                                                        <tr key={i}>
+                                                            <td>{i + 1}</td>
+                                                            <td>{a.patientName}</td>
+                                                            <td>
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                    <Phone size={13} />
+                                                                    {a.patientPhone}
+                                                                </span>
+                                                            </td>
+                                                            <td>{a.description}</td>
+                                                            {selectedStaff.role === 'doctor' && (
+                                                                <td><strong>{a.amount?.toLocaleString()} so'm</strong></td>
+                                                            )}
+                                                            {selectedStaff.role === 'doctor' && (
+                                                                <td>{getPaymentLabel(a.paymentMethod)}</td>
+                                                            )}
+                                                            <td>
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                                                                    <Calendar size={13} />
+                                                                    {new Date(a.date).toLocaleDateString('uz-UZ')}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="btn btn-secondary" onClick={() => setShowActivitiesModal(false)}>
+                                Yopish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* View Modal */}
             {showViewModal && selectedStaff && (

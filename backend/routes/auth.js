@@ -169,4 +169,60 @@ router.delete('/users/:id', auth, async (req, res) => {
     }
 });
 
+// Get staff activities (admin only)
+router.get('/users/:id/activities', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Faqat admin uchun' });
+        }
+
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });
+        }
+
+        const PatientDiagnosis = require('../models/PatientDiagnosis');
+        const Patient = require('../models/Patient');
+
+        let activities = [];
+
+        if (user.role === 'doctor') {
+            // Doktor qo'shgan analizlar
+            const diagnoses = await PatientDiagnosis.find({ doctor: user._id, isActive: true })
+                .populate('patient', 'fullName phone')
+                .select('diagnosisName patient totalAmount paymentMethod createdAt')
+                .sort({ createdAt: -1 });
+
+            activities = diagnoses.map(d => ({
+                type: 'diagnosis',
+                patientName: d.patient?.fullName || '-',
+                patientPhone: d.patient?.phone || '-',
+                description: d.diagnosisName,
+                amount: d.totalAmount,
+                paymentMethod: d.paymentMethod,
+                date: d.createdAt
+            }));
+        } else if (user.role === 'registrator') {
+            // Registrator ro'yxatga olgan bemorlar
+            const patients = await Patient.find({ registeredBy: user._id })
+                .select('fullName phone gender createdAt')
+                .sort({ createdAt: -1 });
+
+            activities = patients.map(p => ({
+                type: 'patient',
+                patientName: p.fullName,
+                patientPhone: p.phone || '-',
+                description: 'Bemor ro\'yxatga olindi',
+                gender: p.gender,
+                date: p.createdAt
+            }));
+        }
+
+        res.json({ user, activities });
+    } catch (error) {
+        console.error('Activities error:', error);
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
 module.exports = router;
