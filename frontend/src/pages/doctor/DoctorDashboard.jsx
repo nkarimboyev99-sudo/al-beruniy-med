@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     UserPlus,
-    ClipboardList,
     Settings as SettingsIcon,
     LogOut,
     FileText
@@ -67,7 +66,6 @@ function DoctorDashboard() {
     // Menu items
     const menuItems = [
         { path: '/doctor/patients', icon: UserPlus, label: 'Bemorlar' },
-        { path: '/doctor/analyses', icon: ClipboardList, label: 'Oxirgi analizlar' },
         { path: '/doctor/settings', icon: SettingsIcon, label: 'Sozlamalar' },
     ]
 

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-    ClipboardList, Search, Calendar, User,
-    Phone, Eye, FileText, Plus
+    ClipboardList, Search, Calendar,
+    Phone, Eye
 } from 'lucide-react'
 import '../admin/DataManagement.css'
 
@@ -73,10 +73,6 @@ function DoctorAnalyses() {
                         <p className="pm-subtitle">Siz qo'shgan analizlar tarixi</p>
                     </div>
                 </div>
-                <button className="pm-add-btn" onClick={() => navigate('/doctor/patients')}>
-                    <Plus size={18} />
-                    Analiz qo'shish
-                </button>
             </div>
 
             {/* Stats */}
