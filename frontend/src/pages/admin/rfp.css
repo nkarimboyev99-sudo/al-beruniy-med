@@ -599,6 +599,21 @@
 }
 .rfp-table tbody tr:hover { background: #f8fafc; }
 .rfp-row-even { background: #fafbfd; }
+
+/* Kategoriya sarlavha qatori */
+.rfp-cat-header-row {
+    background: #e8f0fe !important;
+}
+.rfp-cat-header-cell {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1d4ed8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-top: 2px solid #bfdbfe;
+    border-bottom: 1px solid #bfdbfe;
+}
 .rfp-table tbody tr:last-child { border-bottom: none; }
 
 .rfp-td-num {

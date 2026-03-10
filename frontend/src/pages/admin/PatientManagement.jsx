@@ -4610,41 +4610,68 @@ function PatientManagement({ readOnly = false }) {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {(cat.rows || []).map((row, rowIdx) => (
-                                                        <tr key={row.id} className={rowIdx % 2 === 0 ? 'rfp-row-even' : ''}>
-                                                            <td className="rfp-td-num">{rowIdx + 1}</td>
-                                                            {(cat.columns || []).map((col, colIdx) => {
-                                                                const isResultCol = colIdx === 1
-                                                                const isLastRow = rowIdx === cat.rows.length - 1
-                                                                return (
-                                                                    <td key={col.id} className={isResultCol ? 'rfp-td-result' : 'rfp-td-editable'}>
-                                                                        <input
-                                                                            type="text"
-                                                                            className="rfp-cell-input"
-                                                                            placeholder="—"
-                                                                            value={row.values?.[col.id] || ''}
-                                                                            onChange={e => updateResultRow(catIndex, row.id, col.id, e.target.value)}
-                                                                            onKeyDown={e => {
-                                                                                if (e.key === 'Enter' && isLastRow && isResultCol) {
-                                                                                    e.preventDefault()
-                                                                                    addResultRow(catIndex)
-                                                                                    setTimeout(() => {
-                                                                                        const inputs = document.querySelectorAll('.rfp-cell-input')
-                                                                                        if (inputs.length) inputs[inputs.length - 1].focus()
-                                                                                    }, 50)
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                    </td>
-                                                                )
-                                                            })}
-                                                            <td className="rfp-td-del">
-                                                                <button className="rfp-del-row" onClick={() => removeResultRow(catIndex, row.id)}>
-                                                                    <Trash2 size={13} />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                    {(() => {
+                                                        const idName = (cat.columns || [])[0]?.id || 'col_1'
+                                                        // Har bir qatorni kategoriyasiga bog'lash
+                                                        const rowsWithCat = (cat.rows || []).map(row => {
+                                                            const testName = row.values?.[idName] || ''
+                                                            const match = diagnosesList.find(d => d.name === testName)
+                                                            return { row, catName: match?.category?.name || null }
+                                                        })
+                                                        // Kategoriya bo'yicha guruhlab render qilish
+                                                        let dataRowIdx = 0
+                                                        let lastCat = '__NONE__'
+                                                        return rowsWithCat.map(({ row, catName }, i) => {
+                                                            const showHeader = catName && catName !== lastCat
+                                                            if (catName) lastCat = catName
+                                                            const currentDataIdx = dataRowIdx++
+                                                            const isLastRow = currentDataIdx === cat.rows.length - 1
+                                                            return (
+                                                                <>
+                                                                    {showHeader && (
+                                                                        <tr key={`cat-header-${i}`} className="rfp-cat-header-row">
+                                                                            <td></td>
+                                                                            <td colSpan={(cat.columns || []).length + 1} className="rfp-cat-header-cell">
+                                                                                {catName}
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                    <tr key={row.id} className={currentDataIdx % 2 === 0 ? 'rfp-row-even' : ''}>
+                                                                        <td className="rfp-td-num">{currentDataIdx + 1}</td>
+                                                                        {(cat.columns || []).map((col, colIdx) => {
+                                                                            const isResultCol = colIdx === 1
+                                                                            return (
+                                                                                <td key={col.id} className={isResultCol ? 'rfp-td-result' : 'rfp-td-editable'}>
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        className="rfp-cell-input"
+                                                                                        placeholder="—"
+                                                                                        value={row.values?.[col.id] || ''}
+                                                                                        onChange={e => updateResultRow(catIndex, row.id, col.id, e.target.value)}
+                                                                                        onKeyDown={e => {
+                                                                                            if (e.key === 'Enter' && isLastRow && isResultCol) {
+                                                                                                e.preventDefault()
+                                                                                                addResultRow(catIndex)
+                                                                                                setTimeout(() => {
+                                                                                                    const inputs = document.querySelectorAll('.rfp-cell-input')
+                                                                                                    if (inputs.length) inputs[inputs.length - 1].focus()
+                                                                                                }, 50)
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                </td>
+                                                                            )
+                                                                        })}
+                                                                        <td className="rfp-td-del">
+                                                                            <button className="rfp-del-row" onClick={() => removeResultRow(catIndex, row.id)}>
+                                                                                <Trash2 size={13} />
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                </>
+                                                            )
+                                                        })
+                                                    })()}
                                                 </tbody>
                                             </table>
                                         </div>
