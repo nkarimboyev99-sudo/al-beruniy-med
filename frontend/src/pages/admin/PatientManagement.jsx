@@ -27,7 +27,7 @@ import './DataManagement.css'
 import './rfp.css'
 import '../doctor/DiagnosisForm.css'
 
-function PatientManagement() {
+function PatientManagement({ readOnly = false }) {
     const navigate = useNavigate()
     const [patients, setPatients] = useState([])
     const [diagnosesList, setDiagnosesList] = useState([])
@@ -2560,15 +2560,19 @@ function PatientManagement() {
                                             <button className="pm-act-btn pm-act-view" title="Ko'rish" onClick={() => handleView(patient)}>
                                                 <Eye size={15} />
                                             </button>
-                                            <button className="pm-act-btn pm-act-list" title="Analizlar" onClick={() => handleViewAnalyzes(patient)}>
-                                                <ClipboardList size={15} />
-                                            </button>
+                                            {!readOnly && (
+                                                <button className="pm-act-btn pm-act-list" title="Analizlar" onClick={() => handleViewAnalyzes(patient)}>
+                                                    <ClipboardList size={15} />
+                                                </button>
+                                            )}
                                             <button className="pm-act-btn pm-act-edit" title="Tahrirlash" onClick={() => handleEdit(patient)}>
                                                 <Edit2 size={15} />
                                             </button>
-                                            <button className="pm-act-btn pm-act-del" title="O'chirish" onClick={() => handleDelete(patient)}>
-                                                <Trash2 size={15} />
-                                            </button>
+                                            {!readOnly && (
+                                                <button className="pm-act-btn pm-act-del" title="O'chirish" onClick={() => handleDelete(patient)}>
+                                                    <Trash2 size={15} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -2803,27 +2807,29 @@ function PatientManagement() {
                                         <Stethoscope size={18} />
                                         Analizlar tarixi
                                     </h4>
-                                    <div className="pv-section-actions">
-                                        {patientDiagnoses.length > 0 && (
-                                            <button
-                                                className="btn btn-success btn-sm"
-                                                onClick={openResultsEntryModal}
-                                            >
-                                                <ClipboardList size={16} />
-                                                Barcha natijalarni kiritish
+                                    {!readOnly && (
+                                        <div className="pv-section-actions">
+                                            {patientDiagnoses.length > 0 && (
+                                                <button
+                                                    className="btn btn-success btn-sm"
+                                                    onClick={openResultsEntryModal}
+                                                >
+                                                    <ClipboardList size={16} />
+                                                    Barcha natijalarni kiritish
+                                                </button>
+                                            )}
+                                            <button className="btn btn-primary btn-sm" onClick={() => {
+                                                if (window.location.pathname.startsWith('/doctor')) {
+                                                    navigate(`/doctor/patients/diagnosis/${selectedPatient._id}`)
+                                                } else {
+                                                    openDiagnosisModal()
+                                                }
+                                            }}>
+                                                <PlusCircle size={16} />
+                                                analiz qo'shish
                                             </button>
-                                        )}
-                                        <button className="btn btn-primary btn-sm" onClick={() => {
-                                            if (window.location.pathname.startsWith('/doctor')) {
-                                                navigate(`/doctor/patients/diagnosis/${selectedPatient._id}`)
-                                            } else {
-                                                openDiagnosisModal()
-                                            }
-                                        }}>
-                                            <PlusCircle size={16} />
-                                            analiz qo'shish
-                                        </button>
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {diagnosesLoading ? (
@@ -2835,16 +2841,18 @@ function PatientManagement() {
                                     <div className="pv-empty">
                                         <ClipboardList size={28} />
                                         <p>Analizlar topilmadi</p>
-                                        <button className="btn btn-outline btn-sm" onClick={() => {
-                                            if (window.location.pathname.startsWith('/doctor')) {
-                                                navigate(`/doctor/patients/diagnosis/${selectedPatient._id}`)
-                                            } else {
-                                                openDiagnosisModal()
-                                            }
-                                        }}>
-                                            <Plus size={14} />
-                                            Birinchi analizni qo'shish
-                                        </button>
+                                        {!readOnly && (
+                                            <button className="btn btn-outline btn-sm" onClick={() => {
+                                                if (window.location.pathname.startsWith('/doctor')) {
+                                                    navigate(`/doctor/patients/diagnosis/${selectedPatient._id}`)
+                                                } else {
+                                                    openDiagnosisModal()
+                                                }
+                                            }}>
+                                                <Plus size={14} />
+                                                Birinchi analizni qo'shish
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="pv-diagnoses-list">
@@ -2878,13 +2886,15 @@ function PatientManagement() {
 
                                                     {/* Tugmalar */}
                                                     <div className="pv-dc-actions">
-                                                        <button
-                                                            className="pv-dc-btn pv-dc-btn--results"
-                                                            onClick={() => openSingleCategoryModal(diagnosis)}
-                                                        >
-                                                            <ClipboardList size={14} />
-                                                            Natijalar
-                                                        </button>
+                                                        {!readOnly && (
+                                                            <button
+                                                                className="pv-dc-btn pv-dc-btn--results"
+                                                                onClick={() => openSingleCategoryModal(diagnosis)}
+                                                            >
+                                                                <ClipboardList size={14} />
+                                                                Natijalar
+                                                            </button>
+                                                        )}
                                                         <button
                                                             className="pv-dc-btn pv-dc-btn--print"
                                                             onClick={() => handlePrintSavedResults(diagnosis)}

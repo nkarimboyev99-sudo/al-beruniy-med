@@ -96,8 +96,8 @@ function RegistratorDashboard() {
             <div className="admin-main">
                 <main className="admin-content">
                     <Routes>
-                        <Route index element={<PatientManagement />} />
-                        <Route path="patients" element={<PatientManagement />} />
+                        <Route index element={<PatientManagement readOnly={true} />} />
+                        <Route path="patients" element={<PatientManagement readOnly={true} />} />
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
                         <Route path="settings" element={<Settings />} />
