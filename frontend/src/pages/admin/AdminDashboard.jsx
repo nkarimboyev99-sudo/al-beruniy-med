@@ -3,7 +3,6 @@ import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     Users,
     UserPlus,
-    Stethoscope,
     Wallet,
     Settings as SettingsIcon,
     LogOut,
@@ -15,7 +14,7 @@ import {
 import './AdminLayout.css'
 
 // Pages
-import DoctorManagement from './DoctorManagement'
+import StaffManagement from './StaffManagement'
 import PatientManagement from './PatientManagement'
 import DiagnosisManagement from './DiagnosisManagement'
 import Accounting from './Accounting'
@@ -72,9 +71,9 @@ function AdminDashboard() {
     }
 
     const menuItems = [
-        { path: '/admin/doctors', icon: Stethoscope, label: 'Doktorlar' },
+        { path: '/admin/staff', icon: Users, label: 'Xodimlar' },
         { path: '/admin/patients', icon: UserPlus, label: 'Bemorlar' },
-        { path: '/admin/diagnoses', icon: Users, label: 'Analizlar' },
+        { path: '/admin/diagnoses', icon: UserPlus, label: 'Analizlar' },
         { path: '/admin/accounting', icon: Wallet, label: 'Hisob-kitob' },
         { path: '/admin/settings', icon: SettingsIcon, label: 'Sozlamalar' },
     ]
@@ -124,8 +123,8 @@ function AdminDashboard() {
                 {/* Content Area */}
                 <main className="admin-content">
                     <Routes>
-                        <Route index element={<DoctorManagement />} />
-                        <Route path="doctors" element={<DoctorManagement />} />
+                        <Route index element={<StaffManagement />} />
+                        <Route path="staff" element={<StaffManagement />} />
                         <Route path="patients" element={<PatientManagement />} />
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
