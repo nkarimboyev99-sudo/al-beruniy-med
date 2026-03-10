@@ -9,7 +9,11 @@ import './AddPatientPage.css'
 
 function AddPatientPage() {
     const navigate = useNavigate()
-    const basePath = window.location.pathname.startsWith('/admin') ? '/admin' : '/doctor'
+    const basePath = window.location.pathname.startsWith('/admin')
+        ? '/admin'
+        : window.location.pathname.startsWith('/registrator')
+            ? '/registrator'
+            : '/doctor'
 
     const [formData, setFormData] = useState({
         fullName: '', birthDate: '', gender: 'male',
