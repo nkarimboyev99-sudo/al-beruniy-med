@@ -81,8 +81,12 @@ function PatientManagement({ readOnly = false }) {
         gender: 'male',
         phone: '',
         passportNumber: '',
+        referredBy: '',
         notes: ''
     })
+    const [referringDoctors, setReferringDoctors] = useState([])
+    const [refDocSuggestions, setRefDocSuggestions] = useState([])
+    const [showRefDocSuggestions, setShowRefDocSuggestions] = useState(false)
     const [diagnosisFormData, setDiagnosisFormData] = useState({
         diagnoses: [], // Array of { diagnosisId, diagnosisName, medicines: [] }
         notes: ''
@@ -122,7 +126,31 @@ function PatientManagement({ readOnly = false }) {
         fetchCategoriesList()
         fetchMedicinesList()
         fetchInventory()
+        fetchReferringDoctors()
     }, [])
+
+    const fetchReferringDoctors = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/referring-doctors', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (res.ok) setReferringDoctors(await res.json())
+        } catch (e) { console.error(e) }
+    }
+
+    const handleRefDocInput = (val) => {
+        setFormData(f => ({ ...f, referredBy: val }))
+        if (val.length >= 2) {
+            const filtered = referringDoctors.filter(d =>
+                d.fullName?.toLowerCase().includes(val.toLowerCase())
+            )
+            setRefDocSuggestions(filtered)
+            setShowRefDocSuggestions(filtered.length > 0)
+        } else {
+            setShowRefDocSuggestions(false)
+        }
+    }
 
     const fetchPatients = async () => {
         try {
@@ -1124,6 +1152,7 @@ function PatientManagement({ readOnly = false }) {
             gender: patient.gender || 'male',
             phone: patient.phone || '',
             passportNumber: patient.passportNumber || '',
+            referredBy: patient.referredBy || '',
             notes: patient.notes || ''
         })
         setError('')
@@ -1138,6 +1167,7 @@ function PatientManagement({ readOnly = false }) {
             gender: 'male',
             phone: '',
             passportNumber: '',
+            referredBy: '',
             notes: ''
         })
         setEditingPatient(null)
@@ -2719,15 +2749,38 @@ function PatientManagement({ readOnly = false }) {
                                     </div>
                                 </div>
 
-                                <div className="pe-field">
-                                    <label className="pe-label">Izohlar</label>
-                                    <textarea
+                                <div className="pe-field" style={{ position: 'relative' }}>
+                                    <label className="pe-label">Yo'naltirgan doktor</label>
+                                    <input
+                                        type="text"
                                         className="pe-input"
-                                        placeholder="Qo'shimcha ma'lumotlar"
-                                        rows="3"
-                                        value={formData.notes}
-                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        placeholder="Doktor ismi (2 harf yozing...)"
+                                        value={formData.referredBy}
+                                        onChange={(e) => handleRefDocInput(e.target.value)}
+                                        onBlur={() => setTimeout(() => setShowRefDocSuggestions(false), 150)}
+                                        autoComplete="off"
                                     />
+                                    {showRefDocSuggestions && (
+                                        <ul style={{
+                                            position: 'absolute', top: '100%', left: 0, right: 0,
+                                            background: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #e2e8f0)',
+                                            borderRadius: '8px', zIndex: 100, margin: 0, padding: '4px 0',
+                                            listStyle: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: '180px', overflowY: 'auto'
+                                        }}>
+                                            {refDocSuggestions.map(d => (
+                                                <li key={d._id}
+                                                    style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '0.9rem' }}
+                                                    onMouseDown={() => {
+                                                        setFormData(f => ({ ...f, referredBy: d.fullName }))
+                                                        setShowRefDocSuggestions(false)
+                                                    }}
+                                                >
+                                                    {d.fullName}
+                                                    {d.organization && <span style={{ color: 'var(--text-muted)', marginLeft: 6, fontSize: '0.8rem' }}>— {d.organization}</span>}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             </div>
 
