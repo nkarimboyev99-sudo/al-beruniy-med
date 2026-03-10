@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     Users,
     UserPlus,
+    UserCheck,
     Wallet,
     Settings as SettingsIcon,
     LogOut,
@@ -15,6 +16,7 @@ import './AdminLayout.css'
 
 // Pages
 import StaffManagement from './StaffManagement'
+import ReferringDoctors from './ReferringDoctors'
 import PatientManagement from './PatientManagement'
 import DiagnosisManagement from './DiagnosisManagement'
 import Accounting from './Accounting'
@@ -74,6 +76,7 @@ function AdminDashboard() {
         { path: '/admin/staff', icon: Users, label: 'Xodimlar' },
         { path: '/admin/patients', icon: UserPlus, label: 'Bemorlar' },
         { path: '/admin/diagnoses', icon: UserPlus, label: 'Analizlar' },
+        { path: '/admin/referring', icon: UserCheck, label: 'Yo\'naltiruvchilar' },
         { path: '/admin/accounting', icon: Wallet, label: 'Hisob-kitob' },
         { path: '/admin/settings', icon: SettingsIcon, label: 'Sozlamalar' },
     ]
@@ -128,6 +131,7 @@ function AdminDashboard() {
                         <Route path="patients" element={<PatientManagement />} />
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
+                        <Route path="referring" element={<ReferringDoctors />} />
                         <Route path="diagnoses" element={<DiagnosisManagement />} />
                         <Route path="accounting" element={<Accounting />} />
                         <Route path="settings" element={<Settings />} />

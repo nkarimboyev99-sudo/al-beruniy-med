@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     UserPlus, ArrowLeft, Save, Check, AlertCircle,
@@ -19,6 +19,20 @@ function AddPatientPage() {
         fullName: '', birthDate: '', gender: 'male',
         phone: '+998', passportNumber: '', referredBy: ''
     })
+    const [referringDoctors, setReferringDoctors] = useState([])
+
+    useEffect(() => {
+        const fetchReferring = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('/api/referring-doctors', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                if (res.ok) setReferringDoctors(await res.json())
+            } catch (e) {}
+        }
+        fetchReferring()
+    }, [])
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -338,12 +352,18 @@ function AddPatientPage() {
                                 <label>Yuborgan doktor</label>
                                 <div className="ap-input-wrap">
                                     <UserCheck size={17} className="ap-field-icon" />
-                                    <input
-                                        type="text"
-                                        placeholder="Yuborgan doktor ismi"
+                                    <select
                                         value={formData.referredBy}
                                         onChange={e => setFormData(p => ({ ...p, referredBy: e.target.value }))}
-                                    />
+                                        style={{ paddingLeft: '2.2rem' }}
+                                    >
+                                        <option value="">— Tanlang —</option>
+                                        {referringDoctors.filter(d => d.isActive).map(d => (
+                                            <option key={d._id} value={d.fullName}>
+                                                {d.fullName}{d.organization ? ` (${d.organization})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         </div>

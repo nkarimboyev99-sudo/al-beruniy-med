@@ -13,6 +13,7 @@ const inventoryRoutes = require('./routes/inventory');
 const transactionRoutes = require('./routes/transactions');
 const queueTicketRoutes = require('./routes/queueTickets');
 const categoryRoutes = require('./routes/categories');
+const referringDoctorRoutes = require('./routes/referringDoctors');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/queue-tickets', queueTicketRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/referring-doctors', referringDoctorRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
