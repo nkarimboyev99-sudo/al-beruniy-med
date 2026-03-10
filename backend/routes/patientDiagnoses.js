@@ -5,6 +5,23 @@ const { auth, doctorOrAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get current doctor's own diagnoses
+router.get('/my', auth, doctorOrAdmin, async (req, res) => {
+    try {
+        const diagnoses = await PatientDiagnosis.find({
+            doctor: req.user._id,
+            isActive: true
+        })
+            .populate('patient', 'fullName phone')
+            .sort({ createdAt: -1 });
+
+        res.json(diagnoses);
+    } catch (error) {
+        console.error('Error fetching my diagnoses:', error);
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
 // Get all diagnoses for a specific patient
 router.get('/patient/:patientId', auth, doctorOrAdmin, async (req, res) => {
     try {

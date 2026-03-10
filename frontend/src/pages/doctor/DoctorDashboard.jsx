@@ -1,26 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-    Users,
     UserPlus,
-    Stethoscope,
-    FileText,
+    ClipboardList,
     Settings as SettingsIcon,
     LogOut,
-    Menu,
-    X,
-    Bell,
-    Search,
-    ChevronDown,
-    ClipboardList
+    FileText
 } from 'lucide-react'
 import '../admin/AdminLayout.css'
 
 // Admin sahifalarini import qilish (Doktorlar bo'limisiz)
 import PatientManagement from '../admin/PatientManagement'
-import DiagnosisManagement from '../admin/DiagnosisManagement'
 import DiagnosisForm from './DiagnosisForm'
 import AddPatientPage from './AddPatientPage'
+import DoctorAnalyses from './DoctorAnalyses'
 import Settings from '../admin/Settings'
 
 function DoctorDashboard() {
@@ -74,7 +67,7 @@ function DoctorDashboard() {
     // Menu items
     const menuItems = [
         { path: '/doctor/patients', icon: UserPlus, label: 'Bemorlar' },
-        { path: '/doctor/diagnoses', icon: Users, label: 'Analizlar' },
+        { path: '/doctor/analyses', icon: ClipboardList, label: 'Oxirgi analizlar' },
         { path: '/doctor/settings', icon: SettingsIcon, label: 'Sozlamalar' },
     ]
 
@@ -127,7 +120,7 @@ function DoctorDashboard() {
                         <Route path="patients" element={<PatientManagement />} />
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
-                        <Route path="diagnoses" element={<DiagnosisManagement />} />
+                        <Route path="analyses" element={<DoctorAnalyses />} />
                         <Route path="settings" element={<Settings />} />
                     </Routes>
                 </main>
