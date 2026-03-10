@@ -35,7 +35,7 @@ const adminOnly = (req, res, next) => {
 };
 
 const doctorOrAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin' && req.user.role !== 'doctor') {
+    if (!['admin', 'doctor', 'registrator'].includes(req.user.role)) {
         return res.status(403).json({ message: 'Ruxsat yo\'q' });
     }
     next();
