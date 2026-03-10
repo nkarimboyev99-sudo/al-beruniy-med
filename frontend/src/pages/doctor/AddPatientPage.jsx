@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     UserPlus, ArrowLeft, Save, Check, AlertCircle,
     User, Phone, Calendar, FileText, ChevronRight,
-    Stethoscope, Search
+    Stethoscope, Search, UserCheck
 } from 'lucide-react'
 import './AddPatientPage.css'
 
@@ -17,7 +17,7 @@ function AddPatientPage() {
 
     const [formData, setFormData] = useState({
         fullName: '', birthDate: '', gender: 'male',
-        phone: '+998', passportNumber: ''
+        phone: '+998', passportNumber: '', referredBy: ''
     })
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
@@ -124,6 +124,7 @@ function AddPatientPage() {
         { icon: Calendar, label: 'Tug\'ilgan sana', filled: !!formData.birthDate },
         { icon: Phone, label: 'Telefon', filled: formData.phone.length > 4 },
         { icon: FileText, label: 'Passport', filled: !!formData.passportNumber },
+        { icon: UserCheck, label: 'Yuborgan doktor', filled: !!formData.referredBy },
     ]
     const filledCount = fields.filter(f => f.filled).length
 
@@ -326,6 +327,25 @@ function AddPatientPage() {
                                 </div>
                             </div>
 
+                        </div>
+
+                        <div className="ap-section">
+                            <h2 className="ap-section-title">
+                                <UserCheck size={18} />
+                                Yo'naltirish
+                            </h2>
+                            <div className="ap-field">
+                                <label>Yuborgan doktor</label>
+                                <div className="ap-input-wrap">
+                                    <UserCheck size={17} className="ap-field-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Yuborgan doktor ismi"
+                                        value={formData.referredBy}
+                                        onChange={e => setFormData(p => ({ ...p, referredBy: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="ap-actions">

@@ -482,6 +482,11 @@ function RegistratorPatients() {
                                     </div>
                                 </div>
                             </div>
+                            {selectedPatient.referredBy && (
+                                <div className="pv-notes">
+                                    <strong>Yuborgan doktor:</strong> {selectedPatient.referredBy}
+                                </div>
+                            )}
                             {selectedPatient.notes && (
                                 <div className="pv-notes">
                                     <strong>Izoh:</strong> {selectedPatient.notes}
