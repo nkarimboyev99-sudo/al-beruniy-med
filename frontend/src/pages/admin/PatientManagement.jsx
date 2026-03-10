@@ -2606,7 +2606,7 @@ function PatientManagement({ readOnly = false }) {
                                             <button className="pm-act-btn pm-act-edit" title="Tahrirlash" onClick={() => handleEdit(patient)}>
                                                 <Edit2 size={15} />
                                             </button>
-                                            {!readOnly && (
+                                            {!readOnly && getBase() !== '/doctor' && (
                                                 <button className="pm-act-btn pm-act-del" title="O'chirish" onClick={() => handleDelete(patient)}>
                                                     <Trash2 size={15} />
                                                 </button>
