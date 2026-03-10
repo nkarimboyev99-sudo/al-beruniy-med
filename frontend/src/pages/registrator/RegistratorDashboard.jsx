@@ -7,9 +7,7 @@ import {
 } from 'lucide-react'
 import '../admin/AdminLayout.css'
 
-import PatientManagement from '../admin/PatientManagement'
-import AddPatientPage from '../doctor/AddPatientPage'
-import DiagnosisForm from '../doctor/DiagnosisForm'
+import RegistratorPatients from './RegistratorPatients'
 import Settings from '../admin/Settings'
 
 function RegistratorDashboard() {
@@ -96,10 +94,8 @@ function RegistratorDashboard() {
             <div className="admin-main">
                 <main className="admin-content">
                     <Routes>
-                        <Route index element={<PatientManagement readOnly={true} />} />
-                        <Route path="patients" element={<PatientManagement readOnly={true} />} />
-                        <Route path="patients/add" element={<AddPatientPage />} />
-                        <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
+                        <Route index element={<RegistratorPatients />} />
+                        <Route path="patients" element={<RegistratorPatients />} />
                         <Route path="settings" element={<Settings />} />
                     </Routes>
                 </main>
