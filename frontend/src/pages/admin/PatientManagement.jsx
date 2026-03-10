@@ -2831,12 +2831,14 @@ function PatientManagement({ readOnly = false }) {
                                                 Barcha natijalarni kiritish
                                             </button>
                                         )}
-                                        <button className="btn btn-primary btn-sm" onClick={() => {
-                                            navigate(`${getBase()}/patients/diagnosis/${selectedPatient._id}`)
-                                        }}>
-                                            <PlusCircle size={16} />
-                                            analiz qo'shish
-                                        </button>
+                                        {getBase() !== '/doctor' && (
+                                            <button className="btn btn-primary btn-sm" onClick={() => {
+                                                navigate(`${getBase()}/patients/diagnosis/${selectedPatient._id}`)
+                                            }}>
+                                                <PlusCircle size={16} />
+                                                analiz qo'shish
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -2849,12 +2851,14 @@ function PatientManagement({ readOnly = false }) {
                                     <div className="pv-empty">
                                         <ClipboardList size={28} />
                                         <p>Analizlar topilmadi</p>
-                                        <button className="btn btn-outline btn-sm" onClick={() => {
-                                            navigate(`${getBase()}/patients/diagnosis/${selectedPatient._id}`)
-                                        }}>
-                                            <Plus size={14} />
-                                            Birinchi analizni qo'shish
-                                        </button>
+                                        {getBase() !== '/doctor' && (
+                                            <button className="btn btn-outline btn-sm" onClick={() => {
+                                                navigate(`${getBase()}/patients/diagnosis/${selectedPatient._id}`)
+                                            }}>
+                                                <Plus size={14} />
+                                                Birinchi analizni qo'shish
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="pv-diagnoses-list">
