@@ -506,27 +506,40 @@ function PatientManagement({ readOnly = false }) {
         const doctorName = user?.fullName || ''
         const logoUrl = `${window.location.origin}/logo.png`
 
-        // Natijasi bor kategoriyalarni filtrlash
-        const catsWithData = allCats.filter(cat =>
-            (cat.rows || []).some(r =>
-                Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
-            )
-        )
-        if (catsWithData.length === 0) { alert('Natijalar kiritilmagan!'); return }
+        // Barcha qatorlarni yig'ib, diagnosesList orqali kategoriyaga bog'lash
+        const groupMap = {} // { categoryName: { rows, cols, createdAt } }
+        const groupOrder = []
 
-        // Har bir kategoriya uchun alohida sahifa bloki
-        const pages = catsWithData.map((cat, pageIdx) => {
+        allCats.forEach(cat => {
             const cols = (cat.columns?.length > 0) ? cat.columns : defaultColumns
+            const idName = cols[0]?.id || 'col_1'
             const rows = (cat.rows || []).filter(r =>
                 Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
             )
-            const isLast = pageIdx === catsWithData.length - 1
+            rows.forEach(row => {
+                const testName = row.values?.[idName] || ''
+                const match = diagnosesList.find(d => d.name === testName)
+                const catName = match?.category?.name || cat.title || 'Boshqa'
+                if (!groupMap[catName]) {
+                    groupMap[catName] = { rows: [], cols, createdAt: cat.createdAt }
+                    groupOrder.push(catName)
+                }
+                groupMap[catName].rows.push(row)
+            })
+        })
+
+        if (groupOrder.length === 0) { alert('Natijalar kiritilmagan!'); return }
+
+        // Har bir kategoriya alohida sahifa
+        const pages = groupOrder.map((catName, pageIdx) => {
+            const { rows, cols, createdAt } = groupMap[catName]
+            const isLast = pageIdx === groupOrder.length - 1
             return `
                 <div class="print-page${isLast ? '' : ' page-break'}">
                     ${buildPrintHeader(logoUrl)}
-                    ${buildPatientBlock(cat.createdAt || now, now)}
+                    ${buildPatientBlock(createdAt || now, now)}
                     <div class="print-title-row">
-                        <div class="print-title">${cat.title || 'LABORATORIYA TAHLILI'}</div>
+                        <div class="print-title">${catName}</div>
                     </div>
                     ${buildTableHTML(cols, rows, false)}
                     <div class="print-footer">
