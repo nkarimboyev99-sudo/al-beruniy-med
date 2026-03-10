@@ -20,6 +20,7 @@ function AddPatientPage() {
         phone: '+998', passportNumber: '', referredBy: ''
     })
     const [referringDoctors, setReferringDoctors] = useState([])
+    const [showReferSuggestions, setShowReferSuggestions] = useState(false)
 
     useEffect(() => {
         const fetchReferring = async () => {
@@ -33,6 +34,13 @@ function AddPatientPage() {
         }
         fetchReferring()
     }, [])
+
+    const referSuggestions = formData.referredBy.length >= 2
+        ? referringDoctors.filter(d =>
+            d.isActive &&
+            d.fullName.toLowerCase().includes(formData.referredBy.toLowerCase())
+          )
+        : []
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -350,20 +358,39 @@ function AddPatientPage() {
                             </h2>
                             <div className="ap-field">
                                 <label>Yuborgan doktor</label>
-                                <div className="ap-input-wrap">
-                                    <UserCheck size={17} className="ap-field-icon" />
-                                    <select
-                                        value={formData.referredBy}
-                                        onChange={e => setFormData(p => ({ ...p, referredBy: e.target.value }))}
-                                        style={{ paddingLeft: '2.2rem' }}
-                                    >
-                                        <option value="">— Tanlang —</option>
-                                        {referringDoctors.filter(d => d.isActive).map(d => (
-                                            <option key={d._id} value={d.fullName}>
-                                                {d.fullName}{d.organization ? ` (${d.organization})` : ''}
-                                            </option>
-                                        ))}
-                                    </select>
+                                <div className="ap-autocomplete">
+                                    <div className="ap-input-wrap">
+                                        <UserCheck size={17} className="ap-field-icon" />
+                                        <input
+                                            type="text"
+                                            placeholder="Yuborgan doktor ismini kiriting"
+                                            value={formData.referredBy}
+                                            onChange={e => {
+                                                setFormData(p => ({ ...p, referredBy: e.target.value }))
+                                                setShowReferSuggestions(e.target.value.length >= 2)
+                                            }}
+                                            onFocus={() => formData.referredBy.length >= 2 && setShowReferSuggestions(true)}
+                                            onBlur={() => setTimeout(() => setShowReferSuggestions(false), 200)}
+                                            autoComplete="off"
+                                        />
+                                    </div>
+                                    {showReferSuggestions && referSuggestions.length > 0 && (
+                                        <div className="ap-suggestions">
+                                            {referSuggestions.map(d => (
+                                                <div key={d._id} className="ap-suggestion-item"
+                                                    onMouseDown={() => {
+                                                        setFormData(p => ({ ...p, referredBy: d.fullName }))
+                                                        setShowReferSuggestions(false)
+                                                    }}>
+                                                    <div className="ap-sug-avatar">{d.fullName.charAt(0)}</div>
+                                                    <div className="ap-sug-details">
+                                                        <div className="ap-sug-name">{d.fullName}</div>
+                                                        {d.organization && <div className="ap-sug-info">{d.organization}</div>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
