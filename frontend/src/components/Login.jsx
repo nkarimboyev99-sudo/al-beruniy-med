@@ -35,7 +35,9 @@ function Login() {
             if (response.ok) {
                 localStorage.setItem('token', data.token)
                 localStorage.setItem('user', JSON.stringify(data.user))
-                navigate(data.user.role === 'admin' ? '/admin' : '/doctor')
+                if (data.user.role === 'admin') navigate('/admin')
+                else if (data.user.role === 'registrator') navigate('/registrator')
+                else navigate('/doctor')
             } else {
                 setError(data.message || 'Login xatosi')
             }
