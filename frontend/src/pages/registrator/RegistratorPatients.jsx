@@ -184,7 +184,7 @@ function RegistratorPatients() {
                         <p className="pm-subtitle">Bemorlar ro'yxatini boshqarish</p>
                     </div>
                 </div>
-                <button className="pm-add-btn" onClick={() => { resetForm(); setShowModal(true) }}>
+                <button className="pm-add-btn" onClick={() => navigate('/registrator/patients/add')}>
                     <Plus size={18} />
                     Yangi bemor
                 </button>

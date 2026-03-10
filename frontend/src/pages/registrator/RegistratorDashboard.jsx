@@ -8,6 +8,8 @@ import {
 import '../admin/AdminLayout.css'
 
 import RegistratorPatients from './RegistratorPatients'
+import AddPatientPage from '../doctor/AddPatientPage'
+import DiagnosisForm from '../doctor/DiagnosisForm'
 import Settings from '../admin/Settings'
 
 function RegistratorDashboard() {
@@ -96,6 +98,8 @@ function RegistratorDashboard() {
                     <Routes>
                         <Route index element={<RegistratorPatients />} />
                         <Route path="patients" element={<RegistratorPatients />} />
+                        <Route path="patients/add" element={<AddPatientPage />} />
+                        <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
                         <Route path="settings" element={<Settings />} />
                     </Routes>
                 </main>
