@@ -29,6 +29,12 @@ import '../doctor/DiagnosisForm.css'
 
 function PatientManagement({ readOnly = false }) {
     const navigate = useNavigate()
+    const getBase = () => {
+        const p = window.location.pathname
+        if (p.startsWith('/doctor')) return '/doctor'
+        if (p.startsWith('/registrator')) return '/registrator'
+        return '/admin'
+    }
     const [patients, setPatients] = useState([])
     const [diagnosesList, setDiagnosesList] = useState([])
     const [categoriesList, setCategoriesList] = useState([])
@@ -1147,7 +1153,7 @@ function PatientManagement({ readOnly = false }) {
     // Open diagnosis modal — DiagnosisForm sahifasiga o'tish
     const openDiagnosisModal = () => {
         if (!selectedPatient?._id) return
-        const base = window.location.pathname.startsWith('/doctor') ? '/doctor' : '/admin'
+        const base = getBase()
         navigate(`${base}/patients/diagnosis/${selectedPatient._id}`)
     }
 
@@ -2426,7 +2432,7 @@ function PatientManagement({ readOnly = false }) {
                     </div>
                 </div>
                 <button className="pm-add-btn" onClick={() => {
-                    const base = window.location.pathname.startsWith('/doctor') ? '/doctor' : '/admin'
+                    const base = getBase()
                     navigate(`${base}/patients/add`)
                 }}>
                     <Plus size={18} />
@@ -2807,29 +2813,23 @@ function PatientManagement({ readOnly = false }) {
                                         <Stethoscope size={18} />
                                         Analizlar tarixi
                                     </h4>
-                                    {!readOnly && (
-                                        <div className="pv-section-actions">
-                                            {patientDiagnoses.length > 0 && (
-                                                <button
-                                                    className="btn btn-success btn-sm"
-                                                    onClick={openResultsEntryModal}
-                                                >
-                                                    <ClipboardList size={16} />
-                                                    Barcha natijalarni kiritish
-                                                </button>
-                                            )}
-                                            <button className="btn btn-primary btn-sm" onClick={() => {
-                                                if (window.location.pathname.startsWith('/doctor')) {
-                                                    navigate(`/doctor/patients/diagnosis/${selectedPatient._id}`)
-                                                } else {
-                                                    openDiagnosisModal()
-                                                }
-                                            }}>
-                                                <PlusCircle size={16} />
-                                                analiz qo'shish
+                                    <div className="pv-section-actions">
+                                        {!readOnly && patientDiagnoses.length > 0 && (
+                                            <button
+                                                className="btn btn-success btn-sm"
+                                                onClick={openResultsEntryModal}
+                                            >
+                                                <ClipboardList size={16} />
+                                                Barcha natijalarni kiritish
                                             </button>
-                                        </div>
-                                    )}
+                                        )}
+                                        <button className="btn btn-primary btn-sm" onClick={() => {
+                                            navigate(`${getBase()}/patients/diagnosis/${selectedPatient._id}`)
+                                        }}>
+                                            <PlusCircle size={16} />
+                                            analiz qo'shish
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {diagnosesLoading ? (
@@ -2841,18 +2841,12 @@ function PatientManagement({ readOnly = false }) {
                                     <div className="pv-empty">
                                         <ClipboardList size={28} />
                                         <p>Analizlar topilmadi</p>
-                                        {!readOnly && (
-                                            <button className="btn btn-outline btn-sm" onClick={() => {
-                                                if (window.location.pathname.startsWith('/doctor')) {
-                                                    navigate(`/doctor/patients/diagnosis/${selectedPatient._id}`)
-                                                } else {
-                                                    openDiagnosisModal()
-                                                }
-                                            }}>
-                                                <Plus size={14} />
-                                                Birinchi analizni qo'shish
-                                            </button>
-                                        )}
+                                        <button className="btn btn-outline btn-sm" onClick={() => {
+                                            navigate(`${getBase()}/patients/diagnosis/${selectedPatient._id}`)
+                                        }}>
+                                            <Plus size={14} />
+                                            Birinchi analizni qo'shish
+                                        </button>
                                     </div>
                                 ) : (
                                     <div className="pv-diagnoses-list">
