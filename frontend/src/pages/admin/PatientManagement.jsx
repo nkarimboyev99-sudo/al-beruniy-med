@@ -498,55 +498,55 @@ function PatientManagement({ readOnly = false }) {
 
     // Chop etish va saqlash
     const handlePrintAndSaveResults = () => {
-        // Avval joriy holatdan chop et (save kutmasdan)
         const allCats = categoryResultsRef.current
         if (!allCats || allCats.length === 0) return
 
-        // Barcha kategoriyalarning qatorlarini birlashtirib chiqarish
-        const allRows = []
-        const firstCols = (allCats[0]?.columns?.length > 0) ? allCats[0].columns : defaultColumns
-        allCats.forEach(cat => {
-            const cols = (cat.columns?.length > 0) ? cat.columns : defaultColumns
-            const filtered = (cat.rows || []).filter(r =>
-                Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
-            )
-            filtered.forEach(row => {
-                const mapped = {}
-                firstCols.forEach((col, ci) => {
-                    mapped[col.id] = row.values?.[cols[ci]?.id] || ''
-                })
-                // Kategoriya nomini to'g'ridan-to'g'ri teglash
-                allRows.push({ ...row, values: mapped, _catName: cat.title || '—' })
-            })
-        })
-
-        const columns = firstCols
-        const rows = allRows
-        if (rows.length === 0) { alert('Natijalar kiritilmagan!'); return }
-
-        const cat = allCats[currentCategoryIndex] || allCats[0]
         const now = new Date()
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         const doctorName = user?.fullName || ''
         const logoUrl = `${window.location.origin}/logo.png`
 
+        // Natijasi bor kategoriyalarni filtrlash
+        const catsWithData = allCats.filter(cat =>
+            (cat.rows || []).some(r =>
+                Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
+            )
+        )
+        if (catsWithData.length === 0) { alert('Natijalar kiritilmagan!'); return }
+
+        // Har bir kategoriya uchun alohida sahifa bloki
+        const pages = catsWithData.map((cat, pageIdx) => {
+            const cols = (cat.columns?.length > 0) ? cat.columns : defaultColumns
+            const rows = (cat.rows || []).filter(r =>
+                Object.values(r.values || {}).some(v => v !== undefined && v !== null && v.toString().trim() !== '')
+            )
+            const isLast = pageIdx === catsWithData.length - 1
+            return `
+                <div class="print-page${isLast ? '' : ' page-break'}">
+                    ${buildPrintHeader(logoUrl)}
+                    ${buildPatientBlock(cat.createdAt || now, now)}
+                    <div class="print-title-row">
+                        <div class="print-title">${cat.title || 'LABORATORIYA TAHLILI'}</div>
+                    </div>
+                    ${buildTableHTML(cols, rows, false)}
+                    <div class="print-footer">
+                        <span class="doctor-label">Врач:</span> <span class="doctor-name">${doctorName}</span>
+                    </div>
+                </div>
+            `
+        }).join('')
+
         const printWindow = window.open('', '_blank')
         if (!printWindow) { alert('Popup bloklandi! Brauzer manzil qatoridagi popup belgisiga bosing va ruxsat bering.'); return }
         printWindow.document.write(`<!DOCTYPE html><html><head>
             <meta charset="utf-8"/>
-            <title>${selectedPatient?.fullName} — ${cat.title || 'natija'}</title>
-            <style>${getPrintStyle()}</style>
-        </head><body>
-            ${buildPrintHeader(logoUrl)}
-            ${buildPatientBlock(now, now)}
-            <div class="print-title-row">
-                <div class="print-title">${cat.title || 'LABORATORIYA TAHLILI'}</div>
-            </div>
-            ${buildTableHTML(columns, rows, true)}
-            <div class="print-footer">
-                <span class="doctor-label">Врач:</span> <span class="doctor-name">${doctorName}</span>
-            </div>
-        </body></html>`)
+            <title>${selectedPatient?.fullName} — natijalar</title>
+            <style>
+                ${getPrintStyle()}
+                .print-page { width: 100%; }
+                .page-break { page-break-after: always; }
+            </style>
+        </head><body>${pages}</body></html>`)
         printWindow.document.close()
         printWindow.focus()
         setTimeout(() => { printWindow.print(); printWindow.close() }, 500)
