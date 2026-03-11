@@ -22,6 +22,10 @@ const categorySchema = new mongoose.Schema({
     price: {
         type: Number,
         default: 0
+    },
+    hideAnalyses: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

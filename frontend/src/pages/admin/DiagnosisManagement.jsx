@@ -44,7 +44,9 @@ function DiagnosisManagement() {
     const [categoryFormData, setCategoryFormData] = useState({
         name: '',
         code: '',
-        description: ''
+        description: '',
+        price: 0,
+        hideAnalyses: false
     })
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -108,7 +110,9 @@ function DiagnosisManagement() {
         setCategoryFormData({
             name: '',
             code: '',
-            description: ''
+            description: '',
+            price: 0,
+            hideAnalyses: false
         })
         setEditingCategory(null)
         setCategoryError('')
@@ -121,7 +125,9 @@ function DiagnosisManagement() {
             setCategoryFormData({
                 name: category.name,
                 code: category.code || '',
-                description: category.description || ''
+                description: category.description || '',
+                price: category.price || 0,
+                hideAnalyses: category.hideAnalyses || false
             })
         } else {
             resetCategoryForm()
@@ -451,10 +457,27 @@ function DiagnosisManagement() {
                                         <h3>{cat.name}</h3>
                                         {cat.code && <code>{cat.code}</code>}
                                         {cat.description && <p>{cat.description}</p>}
+                                        {cat.hideAnalyses && cat.price > 0 && (
+                                            <div style={{ marginTop: '6px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                <span style={{ fontSize: '0.75rem', background: color.badge, color: color.text, borderRadius: '6px', padding: '2px 8px', fontWeight: 600 }}>
+                                                    {new Intl.NumberFormat('uz-UZ').format(cat.price)} so'm
+                                                </span>
+                                                <span style={{ fontSize: '0.75rem', background: '#fef3c7', color: '#b45309', borderRadius: '6px', padding: '2px 8px', fontWeight: 600 }}>
+                                                    Yashirin
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="dm-cat-footer">
                                         <span className="dm-cat-count">{count} ta analiz</span>
-                                        <ChevronRight size={16} className="dm-cat-arrow" />
+                                        <button
+                                            className="action-btn edit"
+                                            title="Kategoriyani tahrirlash"
+                                            onClick={(e) => { e.stopPropagation(); openCategoryModal(cat) }}
+                                            style={{ marginLeft: 'auto', padding: '4px 8px' }}
+                                        >
+                                            <Edit2 size={14} />
+                                        </button>
                                     </div>
                                 </div>
                             )
@@ -980,6 +1003,73 @@ function DiagnosisManagement() {
                                             onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
                                         />
                                     </div>
+                                </div>
+
+                                {/* Analizlarni yashirish toggle */}
+                                <div className="form-group">
+                                    <label className="form-label" style={{ marginBottom: '10px' }}>Analizlarni yashirish</label>
+                                    <div
+                                        onClick={() => setCategoryFormData(prev => ({
+                                            ...prev,
+                                            hideAnalyses: !prev.hideAnalyses,
+                                            price: prev.hideAnalyses ? 0 : prev.price
+                                        }))}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '12px',
+                                            cursor: 'pointer', padding: '12px 16px',
+                                            background: categoryFormData.hideAnalyses ? '#eff6ff' : '#f9fafb',
+                                            border: `1.5px solid ${categoryFormData.hideAnalyses ? '#2563eb' : '#e5e7eb'}`,
+                                            borderRadius: '10px', transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '44px', height: '24px', borderRadius: '12px',
+                                            background: categoryFormData.hideAnalyses ? '#2563eb' : '#d1d5db',
+                                            position: 'relative', transition: 'background 0.2s', flexShrink: 0
+                                        }}>
+                                            <div style={{
+                                                width: '18px', height: '18px', borderRadius: '50%',
+                                                background: '#fff', position: 'absolute',
+                                                top: '3px', left: categoryFormData.hideAnalyses ? '23px' : '3px',
+                                                transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                                            }} />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111827' }}>
+                                                {categoryFormData.hideAnalyses ? 'Yashirilgan' : 'Ko\'rinadi'}
+                                            </div>
+                                            <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                                                Registratorda alohida analizlar ko'rinmaydi
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Narx — faqat hideAnalyses yoqilganda */}
+                                <div className="form-group">
+                                    <label className="form-label" style={{ color: categoryFormData.hideAnalyses ? '#374151' : '#9ca3af' }}>
+                                        Kategoriya narxi (so'm)
+                                        {!categoryFormData.hideAnalyses && (
+                                            <span style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#f59e0b' }}>
+                                                — avval "Analizlarni yashirish"ni yoqing
+                                            </span>
+                                        )}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="form-input"
+                                        placeholder="0"
+                                        min="0"
+                                        step="1000"
+                                        value={categoryFormData.price}
+                                        disabled={!categoryFormData.hideAnalyses}
+                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, price: parseInt(e.target.value) || 0 })}
+                                        style={{
+                                            opacity: categoryFormData.hideAnalyses ? 1 : 0.5,
+                                            cursor: categoryFormData.hideAnalyses ? 'auto' : 'not-allowed',
+                                            background: categoryFormData.hideAnalyses ? '#fff' : '#f3f4f6'
+                                        }}
+                                    />
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>

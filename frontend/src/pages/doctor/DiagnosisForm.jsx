@@ -29,6 +29,7 @@ function DiagnosisForm() {
     const [step, setStep] = useState(1)
     const [formData, setFormData] = useState({ diagnoses: [], notes: '' })
     const [paymentData, setPaymentData] = useState({ discount: 0, paymentMethod: 'cash' })
+    const [hiddenCatSelections, setHiddenCatSelections] = useState({})
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -178,23 +179,62 @@ function DiagnosisForm() {
         })
     }
 
-    const totalDiagnoses = formData.diagnoses.reduce((s, d) => s + (d.price || 0), 0)
+    const toggleHiddenCategory = (cat) => {
+        const catDiags = getDiagnosesByCategory(cat._id)
+        const isSelected = cat._id in hiddenCatSelections
+        setFormData(prev => {
+            const catDiagIds = new Set(catDiags.map(d => d._id))
+            const without = prev.diagnoses.filter(x => !catDiagIds.has(x.diagnosisId))
+            if (isSelected) return { ...prev, diagnoses: without }
+            const newDiags = catDiags.map(d => ({
+                diagnosisId: d._id,
+                diagnosisName: d.name,
+                price: 0
+            }))
+            return { ...prev, diagnoses: [...without, ...newDiags] }
+        })
+        setHiddenCatSelections(prev => {
+            if (isSelected) {
+                const next = { ...prev }
+                delete next[cat._id]
+                return next
+            }
+            return { ...prev, [cat._id]: cat.price || 0 }
+        })
+    }
+
+    const hiddenCatTotal = Object.values(hiddenCatSelections).reduce((s, p) => s + p, 0)
+    const regularTotal = formData.diagnoses.filter(d => {
+        const diagEntry = diagnosesList.find(x => x._id === d.diagnosisId)
+        const catId = (diagEntry?.category?._id || diagEntry?.category)?.toString()
+        return !catId || !(catId in hiddenCatSelections)
+    }).reduce((s, d) => s + (d.price || 0), 0)
+    const totalDiagnoses = regularTotal + hiddenCatTotal
     const grandTotal = totalDiagnoses - (paymentData.discount || 0)
 
     const handleSubmit = async () => {
-        if (formData.diagnoses.length === 0) { setError('Kamida bitta analiz tanlang'); return }
+        if (formData.diagnoses.length === 0 && Object.keys(hiddenCatSelections).length === 0) {
+            setError('Kamida bitta analiz tanlang'); return
+        }
         setSaving(true); setError('')
         try {
             const token = localStorage.getItem('token')
             const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
 
             const diagnosisNames = formData.diagnoses.map(d => d.diagnosisName).join(', ')
+            const hiddenCatEntries = Object.entries(hiddenCatSelections).map(([catId, price]) => {
+                const cat = categoriesList.find(c => c._id === catId)
+                return { diagnosisId: catId, name: cat?.name || catId, price, isCategoryPrice: true }
+            })
             const body = {
                 patient: patientId,
                 diagnosis: formData.diagnoses[0]?.diagnosisId || null,
                 diagnosisName: diagnosisNames,
                 notes: formData.notes,
-                diagnosisPrices: formData.diagnoses.map(d => ({ diagnosisId: d.diagnosisId, name: d.diagnosisName, price: d.price || 0 })),
+                diagnosisPrices: [
+                    ...formData.diagnoses.map(d => ({ diagnosisId: d.diagnosisId, name: d.diagnosisName, price: d.price || 0 })),
+                    ...hiddenCatEntries
+                ],
                 totalAmount: grandTotal,
                 discount: paymentData.discount || 0,
                 paymentMethod: paymentData.paymentMethod || 'cash',
@@ -232,6 +272,19 @@ function DiagnosisForm() {
     }
 
     const printReceipt = (diagData) => {
+        // Receipt uchun: yashirin kategoriyalar bitta qatorda, oddiy analizlar alohida
+        const hiddenCatIds = new Set(Object.keys(hiddenCatSelections))
+        const regularReceiptDiags = formData.diagnoses.filter(d => {
+            const diagEntry = diagnosesList.find(x => x._id === d.diagnosisId)
+            const catId = (diagEntry?.category?._id || diagEntry?.category)?.toString()
+            return !catId || !hiddenCatIds.has(catId)
+        })
+        const hiddenCatLines = Object.entries(hiddenCatSelections).map(([catId, price]) => {
+            const cat = categoriesList.find(c => c._id === catId)
+            return { diagnosisName: cat?.name || 'Kategoriya', price }
+        })
+        const receiptLines = [...regularReceiptDiags, ...hiddenCatLines]
+
         const now = new Date()
         const dateStr = `${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}.${now.getFullYear()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`
         const birthStr = patient?.birthDate ? new Date(patient.birthDate).toLocaleDateString('uz-UZ') : ''
@@ -301,7 +354,7 @@ function DiagnosisForm() {
             </tr>
         </thead>
         <tbody>
-            ${formData.diagnoses.map(d => `
+            ${receiptLines.map(d => `
             <tr>
                 <td>${d.diagnosisName}</td>
                 <td>Laboratoriya</td>
@@ -445,20 +498,32 @@ function DiagnosisForm() {
                             {categoriesList.map(cat => {
                                 const catDiagCount = getDiagnosesByCategory(cat._id).length
                                 const catSelectedCount = getSelectedCountByCategory(cat._id)
+                                const isHiddenSelected = cat._id in hiddenCatSelections
                                 return (
                                     <div
                                         key={cat._id}
                                         className={`df-cat-item ${activeCategory === cat._id ? 'active' : ''}`}
-                                        onClick={() => setActiveCategory(cat._id)}
+                                        onClick={() => {
+                                            setActiveCategory(cat._id)
+                                            if (cat.hideAnalyses) toggleHiddenCategory(cat)
+                                        }}
                                     >
                                         <div className="df-cat-item-info">
                                             <span className="df-cat-item-name">{cat.name}</span>
-                                            <span className="df-cat-badge">{catDiagCount}</span>
-                                        </div>
-                                        {catSelectedCount > 0 && (
-                                            <span className="df-cat-selected-badge">
-                                                {catSelectedCount} tanlangan
+                                            <span className="df-cat-badge">
+                                                {cat.hideAnalyses ? 'paket' : catDiagCount}
                                             </span>
+                                        </div>
+                                        {cat.hideAnalyses ? (
+                                            isHiddenSelected && (
+                                                <span className="df-cat-selected-badge">tanlangan</span>
+                                            )
+                                        ) : (
+                                            catSelectedCount > 0 && (
+                                                <span className="df-cat-selected-badge">
+                                                    {catSelectedCount} tanlangan
+                                                </span>
+                                            )
                                         )}
                                     </div>
                                 )
@@ -501,7 +566,7 @@ function DiagnosisForm() {
                                     <h2>{activeCategoryObj?.name || 'Analizlar'}</h2>
                                     <p>{activeCategoryDiags.length} ta analiz mavjud</p>
                                 </div>
-                                {activeCategoryDiags.length > 0 && (
+                                {activeCategoryDiags.length > 0 && !activeCategoryObj?.hideAnalyses && (
                                     <button
                                         className={`df-select-all-btn ${allSelectedInCategory ? 'active' : ''}`}
                                         onClick={() => toggleAllInCategory(activeCategory)}
@@ -513,7 +578,29 @@ function DiagnosisForm() {
                             </div>
 
                             <div className="df-diagnoses-grid">
-                                {activeCategoryDiags.length > 0 ? (
+                                {activeCategoryObj?.hideAnalyses ? (
+                                    // Yashirin kategoriya — bitta toggle karta
+                                    <div
+                                        className={`df-diag-item ${activeCategory in hiddenCatSelections ? 'selected' : ''}`}
+                                        onClick={() => activeCategoryObj && toggleHiddenCategory(activeCategoryObj)}
+                                        style={{ gridColumn: '1/-1' }}
+                                    >
+                                        <div className="df-diag-check">
+                                            {activeCategory in hiddenCatSelections ? <Check size={16} /> : null}
+                                        </div>
+                                        <div className="df-diag-info" style={{ flex: 1 }}>
+                                            <span className="df-diag-name">{activeCategoryObj.name} — barcha {activeCategoryDiags.length} ta analiz</span>
+                                            <span className="df-diag-code" style={{ marginTop: '4px', display: 'block', color: '#6b7280', fontStyle: 'italic' }}>
+                                                Analizlar yashirin — bitta narx
+                                            </span>
+                                        </div>
+                                        {activeCategoryObj.price > 0 && (
+                                            <div className="df-diag-price">
+                                                <span className="df-price-label">{activeCategoryObj.price.toLocaleString()} so'm</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : activeCategoryDiags.length > 0 ? (
                                     activeCategoryDiags.map(d => {
                                         const isSelected = selectedIds.has(d._id)
                                         return (
@@ -572,10 +659,25 @@ function DiagnosisForm() {
                             </div>
 
                             <div className="df-payment-box">
-                                {formData.diagnoses.length > 0 && (
+                                {(formData.diagnoses.length > 0 || Object.keys(hiddenCatSelections).length > 0) && (
                                     <div className="df-pay-section">
                                         <div className="df-pay-section-title">Yo'nalishlar</div>
-                                        {formData.diagnoses.map((d, i) => (
+                                        {/* Yashirin kategoriyalar */}
+                                        {Object.entries(hiddenCatSelections).map(([catId, price]) => {
+                                            const cat = categoriesList.find(c => c._id === catId)
+                                            return (
+                                                <div key={catId} className="df-pay-row">
+                                                    <span>{cat?.name || catId}</span>
+                                                    <strong>{(price || 0).toLocaleString()} so'm</strong>
+                                                </div>
+                                            )
+                                        })}
+                                        {/* Oddiy analizlar (yashirin kategoriyalarga tegishlilari chiqarilmaydi) */}
+                                        {formData.diagnoses.filter(d => {
+                                            const diagEntry = diagnosesList.find(x => x._id === d.diagnosisId)
+                                            const catId = (diagEntry?.category?._id || diagEntry?.category)?.toString()
+                                            return !catId || !(catId in hiddenCatSelections)
+                                        }).map((d, i) => (
                                             <div key={i} className="df-pay-row">
                                                 <span>{d.diagnosisName}</span>
                                                 <strong>{(d.price || 0).toLocaleString()} so'm</strong>
