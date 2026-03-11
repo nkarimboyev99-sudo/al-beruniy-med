@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     UserPlus,
-    Settings as SettingsIcon,
+    User as UserIcon,
     LogOut
 } from 'lucide-react'
 import '../admin/AdminLayout.css'
@@ -10,7 +10,7 @@ import '../admin/AdminLayout.css'
 import RegistratorPatients from './RegistratorPatients'
 import AddPatientPage from '../doctor/AddPatientPage'
 import DiagnosisForm from '../doctor/DiagnosisForm'
-import Settings from '../admin/Settings'
+import ProfileSettings from '../admin/ProfileSettings'
 
 function RegistratorDashboard() {
     const location = useLocation()
@@ -56,7 +56,7 @@ function RegistratorDashboard() {
 
     const menuItems = [
         { path: '/registrator/patients', icon: UserPlus, label: 'Bemorlar' },
-        { path: '/registrator/settings', icon: SettingsIcon, label: 'Sozlamalar' },
+        { path: '/registrator/settings', icon: UserIcon, label: 'Profil' },
     ]
 
     const isActive = (path) => location.pathname.startsWith(path)
@@ -100,7 +100,7 @@ function RegistratorDashboard() {
                         <Route path="patients" element={<RegistratorPatients />} />
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
-                        <Route path="settings" element={<Settings />} />
+                        <Route path="settings" element={<ProfileSettings />} />
                     </Routes>
                 </main>
             </div>

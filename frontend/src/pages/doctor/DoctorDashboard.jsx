@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     UserPlus,
-    Settings as SettingsIcon,
+    User as UserIcon,
     LogOut,
     FileText
 } from 'lucide-react'
@@ -13,7 +13,7 @@ import PatientManagement from '../admin/PatientManagement'
 import DiagnosisForm from './DiagnosisForm'
 import AddPatientPage from './AddPatientPage'
 import DoctorAnalyses from './DoctorAnalyses'
-import Settings from '../admin/Settings'
+import ProfileSettings from '../admin/ProfileSettings'
 
 function DoctorDashboard() {
     const location = useLocation()
@@ -66,7 +66,7 @@ function DoctorDashboard() {
     // Menu items
     const menuItems = [
         { path: '/doctor/patients', icon: UserPlus, label: 'Bemorlar' },
-        { path: '/doctor/settings', icon: SettingsIcon, label: 'Sozlamalar' },
+        { path: '/doctor/settings', icon: UserIcon, label: 'Profil' },
     ]
 
     const isActive = (path, exact = false) => {
@@ -119,7 +119,7 @@ function DoctorDashboard() {
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
                         <Route path="analyses" element={<DoctorAnalyses />} />
-                        <Route path="settings" element={<Settings />} />
+                        <Route path="settings" element={<ProfileSettings />} />
                     </Routes>
                 </main>
             </div>
