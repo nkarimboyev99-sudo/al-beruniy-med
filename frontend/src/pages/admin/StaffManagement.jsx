@@ -322,20 +322,35 @@ function StaffManagement() {
                                     </td>
                                     <td>{member.phone || '-'}</td>
                                     <td>
-                                        <button
+                                        <div
                                             onClick={() => toggleViewScope(member)}
-                                            title={member.viewScope === 'all' ? "Hozir: barcha ko'rinadi. Bosib o'zgartirish" : "Hozir: faqat o'zi. Bosib o'zgartirish"}
+                                            title={member.viewScope === 'all' ? "Barcha bemorlar ko'rinadi — bosib o'zgartirish" : "Faqat o'zi — bosib o'zgartirish"}
                                             style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                                                padding: '4px 10px', borderRadius: '20px', border: 'none',
-                                                cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
-                                                background: member.viewScope === 'all' ? '#dcfce7' : '#eff6ff',
-                                                color: member.viewScope === 'all' ? '#166534' : '#1d4ed8',
-                                                transition: 'all 0.2s'
+                                                display: 'inline-flex', alignItems: 'center', gap: '7px',
+                                                cursor: 'pointer', userSelect: 'none'
                                             }}
                                         >
-                                            {member.viewScope === 'all' ? 'Barcha' : "O'z"}
-                                        </button>
+                                            {/* Toggle switch */}
+                                            <div style={{
+                                                width: '36px', height: '20px', borderRadius: '10px',
+                                                background: member.viewScope === 'all' ? '#16a34a' : '#d1d5db',
+                                                position: 'relative', transition: 'background 0.25s', flexShrink: 0
+                                            }}>
+                                                <div style={{
+                                                    width: '14px', height: '14px', borderRadius: '50%',
+                                                    background: '#fff', position: 'absolute', top: '3px',
+                                                    left: member.viewScope === 'all' ? '19px' : '3px',
+                                                    transition: 'left 0.25s',
+                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.25)'
+                                                }} />
+                                            </div>
+                                            <span style={{
+                                                fontSize: '0.82rem', fontWeight: 600,
+                                                color: member.viewScope === 'all' ? '#16a34a' : '#6b7280'
+                                            }}>
+                                                {member.viewScope === 'all' ? 'Barcha' : "O'z"}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td>
                                         <span className={`status-badge ${member.isActive ? 'active' : 'inactive'}`}>
