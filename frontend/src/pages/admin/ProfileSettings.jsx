@@ -93,33 +93,35 @@ function ProfileSettings() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '520px' }}>
 
                 {/* Profil ma'lumotlari */}
-                <div className="glass-card" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: 700 }}>
-                        <User size={16} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0' }}>
+                    <h3 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <User size={16} color="#2563eb" />
                         Shaxsiy ma'lumotlar
                     </h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '20px' }}>
                         Ism va telefon raqamingizni o'zgartiring
                     </p>
                     <form onSubmit={handleProfileSubmit} className="settings-form">
                         <div className="form-group">
-                            <label className="form-label"><User size={15} /> To'liq ism</label>
+                            <label className="form-label" style={{ color: '#374151' }}><User size={15} /> To'liq ism</label>
                             <input
                                 type="text"
                                 className="form-input"
                                 value={profileData.fullName}
                                 onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                                 placeholder="Ism familiyangiz"
+                                style={{ color: '#111827', background: '#fff' }}
                             />
                         </div>
                         <div className="form-group">
-                            <label className="form-label"><Phone size={15} /> Telefon</label>
+                            <label className="form-label" style={{ color: '#374151' }}><Phone size={15} /> Telefon</label>
                             <input
                                 type="text"
                                 className="form-input"
                                 value={profileData.phone}
                                 onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                                 placeholder="+998 90 123 45 67"
+                                style={{ color: '#111827', background: '#fff' }}
                             />
                         </div>
                         <div className="form-actions">
@@ -132,17 +134,17 @@ function ProfileSettings() {
                 </div>
 
                 {/* Parol o'zgartirish */}
-                <div className="glass-card" style={{ padding: '24px' }}>
-                    <h3 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: 700 }}>
-                        <Lock size={16} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0' }}>
+                    <h3 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Lock size={16} color="#2563eb" />
                         Parolni o'zgartirish
                     </h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '20px' }}>
                         Xavfsizlik uchun kuchli parol tanlang
                     </p>
                     <form onSubmit={handlePasswordSubmit} className="settings-form">
                         <div className="form-group">
-                            <label className="form-label"><Lock size={15} /> Yangi parol</label>
+                            <label className="form-label" style={{ color: '#374151' }}><Lock size={15} /> Yangi parol</label>
                             <div className="password-input">
                                 <input
                                     type={showNew ? 'text' : 'password'}
@@ -150,6 +152,7 @@ function ProfileSettings() {
                                     value={passwordData.newPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                                     placeholder="Yangi parol"
+                                    style={{ color: '#111827', background: '#fff' }}
                                 />
                                 <button type="button" className="password-toggle" onClick={() => setShowNew(!showNew)}>
                                     {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -157,7 +160,7 @@ function ProfileSettings() {
                             </div>
                         </div>
                         <div className="form-group">
-                            <label className="form-label"><Lock size={15} /> Parolni tasdiqlang</label>
+                            <label className="form-label" style={{ color: '#374151' }}><Lock size={15} /> Parolni tasdiqlang</label>
                             <div className="password-input">
                                 <input
                                     type={showConfirm ? 'text' : 'password'}
@@ -165,6 +168,7 @@ function ProfileSettings() {
                                     value={passwordData.confirmPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                                     placeholder="Parolni qaytaring"
+                                    style={{ color: '#111827', background: '#fff' }}
                                 />
                                 <button type="button" className="password-toggle" onClick={() => setShowConfirm(!showConfirm)}>
                                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
