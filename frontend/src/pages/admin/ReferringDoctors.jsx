@@ -255,8 +255,8 @@ function ReferringDoctors() {
                             </button>
                         </div>
                         <div className="modal-form">
-                            <p style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                                <strong>{deletingDoctor?.fullName}</strong> ni o'chirishni xohlaysizmi?
+                            <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#111827', fontSize: '0.95rem' }}>
+                                <strong style={{ color: '#111827' }}>{deletingDoctor?.fullName}</strong> ni o'chirishni xohlaysizmi?
                             </p>
                             <div className="modal-actions">
                                 <button className="btn btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
