@@ -226,6 +226,21 @@ function StaffManagement() {
         }
     }
 
+    const toggleViewScope = async (member) => {
+        const newScope = member.viewScope === 'all' ? 'own' : 'all'
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/auth/users/${member._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ viewScope: newScope })
+            })
+            if (res.ok) fetchStaff()
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     const filteredStaff = staff.filter(member =>
         member.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -282,6 +297,7 @@ function StaffManagement() {
                                 <th>Username</th>
                                 <th>Rol</th>
                                 <th>Telefon</th>
+                                <th>Ko'rish</th>
                                 <th>Holat</th>
                                 <th>Amallar</th>
                             </tr>
@@ -305,6 +321,22 @@ function StaffManagement() {
                                         </span>
                                     </td>
                                     <td>{member.phone || '-'}</td>
+                                    <td>
+                                        <button
+                                            onClick={() => toggleViewScope(member)}
+                                            title={member.viewScope === 'all' ? "Hozir: barcha ko'rinadi. Bosib o'zgartirish" : "Hozir: faqat o'zi. Bosib o'zgartirish"}
+                                            style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                                                padding: '4px 10px', borderRadius: '20px', border: 'none',
+                                                cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
+                                                background: member.viewScope === 'all' ? '#dcfce7' : '#eff6ff',
+                                                color: member.viewScope === 'all' ? '#166534' : '#1d4ed8',
+                                                transition: 'all 0.2s'
+                                            }}
+                                        >
+                                            {member.viewScope === 'all' ? 'Barcha' : "O'z"}
+                                        </button>
+                                    </td>
                                     <td>
                                         <span className={`status-badge ${member.isActive ? 'active' : 'inactive'}`}>
                                             {member.isActive ? 'Faol' : 'Nofaol'}

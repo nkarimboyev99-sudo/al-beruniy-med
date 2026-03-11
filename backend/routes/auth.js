@@ -117,11 +117,11 @@ router.put('/users/:id', auth, async (req, res) => {
             return res.status(403).json({ message: 'Ruxsat yo\'q' });
         }
 
-        const { fullName, username, phone, role, isActive, password } = req.body;
+        const { fullName, username, phone, role, isActive, password, viewScope } = req.body;
 
         // O'zi tahrirlasa faqat fullName, phone, password ga ruxsat
         const updateData = isAdmin
-            ? { fullName, username, phone, role, isActive }
+            ? { fullName, username, phone, role, isActive, ...(viewScope !== undefined && { viewScope }) }
             : { fullName, phone };
 
         // Agar yangi parol berilgan bo'lsa, uni ham yangilash

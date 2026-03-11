@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    viewScope: {
+        type: String,
+        enum: ['own', 'all'],
+        default: 'own'
     }
 }, {
     timestamps: true

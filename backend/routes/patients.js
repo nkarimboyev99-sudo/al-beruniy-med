@@ -8,7 +8,18 @@ const router = express.Router();
 // Get all patients
 router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
-        const patients = await Patient.find()
+        // viewScope filtri
+        let query = {};
+        if (req.user.viewScope === 'own') {
+            if (req.user.role === 'registrator') {
+                query.registeredBy = req.user._id;
+            } else if (req.user.role === 'doctor') {
+                const myPatientIds = await PatientDiagnosis.find({ doctor: req.user._id, isActive: true }).distinct('patient');
+                query._id = { $in: myPatientIds };
+            }
+        }
+
+        const patients = await Patient.find(query)
             .populate('registeredBy', 'fullName')
             .populate('diagnoses.diagnosis')
             .populate('diagnoses.medicines')
