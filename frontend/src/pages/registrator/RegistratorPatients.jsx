@@ -635,7 +635,7 @@ function RegistratorPatients() {
                         </div>
 
                         {/* Body */}
-                        <div style={{ overflowY: 'auto', flex: 1, background: '#fff' }}>
+                        <div style={{ overflowY: 'auto', flex: 1, background: '#fff' }} className="rp-view-body">
                             <div className="pv-body">
                                 <div className="pv-header">
                                     <div className="pv-avatar">{selectedPatient.fullName?.charAt(0) || 'B'}</div>
