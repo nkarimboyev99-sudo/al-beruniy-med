@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
     Stethoscope, Save, ArrowLeft, ArrowRight,
     Check, AlertCircle, Phone, Calendar,
@@ -11,6 +11,8 @@ import logoSrc from '../../logo/logo.png'
 
 function DiagnosisForm() {
     const { patientId } = useParams()
+    const [searchParams] = useSearchParams()
+    const editDiagnosisId = searchParams.get('edit') || null
     const navigate = useNavigate()
     const basePath = window.location.pathname.startsWith('/admin')
         ? '/admin'
@@ -39,17 +41,40 @@ function DiagnosisForm() {
         const token = localStorage.getItem('token')
         const headers = { 'Authorization': `Bearer ${token}` }
         try {
-            const [patRes, diagRes, catRes] = await Promise.all([
+            const requests = [
                 fetch(`/api/patients/${patientId}`, { headers }),
                 fetch('/api/diagnoses', { headers }),
                 fetch('/api/categories', { headers }),
-            ])
+            ]
+            if (editDiagnosisId) {
+                requests.push(fetch(`/api/patient-diagnoses/${editDiagnosisId}`, { headers }))
+            }
+            const results = await Promise.all(requests)
+            const [patRes, diagRes, catRes, editRes] = results
+
             if (patRes.ok) setPatient(await patRes.json())
-            if (diagRes.ok) setDiagnosesList(await diagRes.json())
+            let diagListData = []
+            if (diagRes.ok) { diagListData = await diagRes.json(); setDiagnosesList(diagListData) }
             if (catRes.ok) {
                 const cats = await catRes.json()
                 setCategoriesList(cats)
                 if (cats.length > 0) setActiveCategory(cats[0]._id)
+            }
+            // Edit rejimi: mavjud diagnozni pre-fill qilish
+            if (editRes && editRes.ok) {
+                const existing = await editRes.json()
+                const names = (existing.diagnosisName || '').split(',').map(s => s.trim()).filter(Boolean)
+                const preSelected = names.map(name => {
+                    const found = diagListData.find(d => d.name === name)
+                    const price = existing.diagnosisPrices?.find(p => p.name === name)?.price
+                        || found?.price || 0
+                    return { diagnosisId: found?._id || name, diagnosisName: name, price }
+                })
+                setFormData({ diagnoses: preSelected, notes: existing.notes || '' })
+                setPaymentData({
+                    discount: existing.discount || 0,
+                    paymentMethod: existing.paymentMethod || 'cash'
+                })
             }
         } catch (e) {
             setError("Ma'lumotlarni yuklab bo'lmadi")
@@ -164,36 +189,40 @@ function DiagnosisForm() {
             const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
 
             const diagnosisNames = formData.diagnoses.map(d => d.diagnosisName).join(', ')
-            const res = await fetch('/api/patient-diagnoses', {
-                method: 'POST', headers,
-                body: JSON.stringify({
-                    patient: patientId,
-                    diagnosis: formData.diagnoses[0]?.diagnosisId || null,
-                    diagnosisName: diagnosisNames,
-                    notes: formData.notes,
-                    diagnosisPrices: formData.diagnoses.map(d => ({ diagnosisId: d.diagnosisId, name: d.diagnosisName, price: d.price || 0 })),
-                    totalAmount: grandTotal,
-                    discount: paymentData.discount || 0,
-                    paymentMethod: paymentData.paymentMethod || 'cash',
-                })
-            })
+            const body = {
+                patient: patientId,
+                diagnosis: formData.diagnoses[0]?.diagnosisId || null,
+                diagnosisName: diagnosisNames,
+                notes: formData.notes,
+                diagnosisPrices: formData.diagnoses.map(d => ({ diagnosisId: d.diagnosisId, name: d.diagnosisName, price: d.price || 0 })),
+                totalAmount: grandTotal,
+                discount: paymentData.discount || 0,
+                paymentMethod: paymentData.paymentMethod || 'cash',
+            }
+            const url = editDiagnosisId
+                ? `/api/patient-diagnoses/${editDiagnosisId}`
+                : '/api/patient-diagnoses'
+            const method = editDiagnosisId ? 'PUT' : 'POST'
+            const res = await fetch(url, { method, headers, body: JSON.stringify(body) })
             const data = await res.json()
             if (!res.ok) { setError(data.message || 'Xatolik'); return }
 
-            // Save transaction
-            await fetch('/api/transactions', {
-                method: 'POST', headers,
-                body: JSON.stringify({
-                    type: 'income', category: 'medicine_sale',
-                    amount: grandTotal,
-                    description: `Analiz: ${patient?.fullName} - ${diagnosisNames}`,
-                    patient: patientId,
-                    paymentMethod: paymentData.paymentMethod
+            // Yangi yaratilganda tranzaksiya saqlash
+            if (!editDiagnosisId) {
+                await fetch('/api/transactions', {
+                    method: 'POST', headers,
+                    body: JSON.stringify({
+                        type: 'income', category: 'medicine_sale',
+                        amount: grandTotal,
+                        description: `Analiz: ${patient?.fullName} - ${diagnosisNames}`,
+                        patient: patientId,
+                        paymentMethod: paymentData.paymentMethod
+                    })
                 })
-            })
+            }
 
-            setSuccess('Analiz saqlandi!')
-            printReceipt(data)
+            setSuccess(editDiagnosisId ? 'Analiz yangilandi!' : 'Analiz saqlandi!')
+            if (!editDiagnosisId) printReceipt(data)
             setTimeout(() => navigate(`${basePath}/patients`), 1500)
         } catch (e) {
             setError("Server bilan aloqa yo'q")

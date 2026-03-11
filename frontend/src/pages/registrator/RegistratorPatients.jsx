@@ -603,23 +603,40 @@ function RegistratorPatients() {
                                             <p>Analizlar topilmadi</p>
                                         </div>
                                     ) : (
-                                        <div className="pv-diagnoses-list">
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {patientDiagnoses.map((d) => {
                                                 const nameStr = d.diagnosisName || d.diagnosis?.name || 'Analiz'
                                                 const tags = nameStr.split(',').map(s => s.trim()).filter(Boolean)
                                                 return (
-                                                    <div key={d._id} className="pv-diag-item">
-                                                        <div className="pv-dc-tags">
-                                                            <span className="pv-dc-tag">{tags[0]}</span>
-                                                            {tags.length > 1 && (
-                                                                <span className="pv-dc-tag pv-dc-tag--count">+{tags.length - 1} ta</span>
-                                                            )}
+                                                    <div key={d._id} style={{
+                                                        border: '1px solid #e2e8f0', borderRadius: '10px',
+                                                        padding: '10px 14px', background: '#f8fafc',
+                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'
+                                                    }}>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '4px' }}>
+                                                                <span className="pv-dc-tag">{tags[0]}</span>
+                                                                {tags.length > 1 && (
+                                                                    <span className="pv-dc-tag pv-dc-tag--count">+{tags.length - 1} ta</span>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.78rem', color: '#64748b' }}>
+                                                                <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
+                                                                {d.doctor?.fullName && <span>Vrach: {d.doctor.fullName}</span>}
+                                                                {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
+                                                            </div>
                                                         </div>
-                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px', fontSize: '0.8rem', color: '#64748b' }}>
-                                                            <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
-                                                            {d.doctor?.fullName && <span>Vrach: {d.doctor.fullName}</span>}
-                                                            {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
-                                                        </div>
+                                                        <button
+                                                            className="pm-act-btn pm-act-edit"
+                                                            title="Tahrirlash"
+                                                            onClick={() => {
+                                                                setShowViewModal(false)
+                                                                navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
+                                                            }}
+                                                            style={{ flexShrink: 0 }}
+                                                        >
+                                                            <Edit2 size={14} />
+                                                        </button>
                                                     </div>
                                                 )
                                             })}
