@@ -262,7 +262,7 @@ function DiagnosisForm() {
             }
 
             setSuccess(editDiagnosisId ? 'Analiz yangilandi!' : 'Analiz saqlandi!')
-            if (!editDiagnosisId) printReceipt(data)
+            if (!editDiagnosisId && basePath !== '/doctor') printReceipt(data)
             setTimeout(() => navigate(`${basePath}/patients`), 1500)
         } catch (e) {
             setError("Server bilan aloqa yo'q")
