@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     UserPlus, Plus, Search, Edit2, Eye,
     Phone, Calendar, User, FileText,
-    Save, Check, X
+    Save, Check, X, Stethoscope, ClipboardList
 } from 'lucide-react'
 import '../admin/DataManagement.css'
 import '../admin/rfp.css'
@@ -22,20 +22,30 @@ function RegistratorPatients() {
     const [showViewModal, setShowViewModal] = useState(false)
     const [editingPatient, setEditingPatient] = useState(null)
     const [selectedPatient, setSelectedPatient] = useState(null)
+    const [patientDiagnoses, setPatientDiagnoses] = useState([])
+    const [diagnosesLoading, setDiagnosesLoading] = useState(false)
 
     const [formData, setFormData] = useState({
-        fullName: '', birthDate: '', gender: 'male', phone: '', passportNumber: '', notes: ''
+        fullName: '', birthDate: '', gender: 'male', phone: '', passportNumber: '', referredBy: '', notes: ''
     })
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
-    // Autocomplete
+    // Patient autocomplete
     const [suggestions, setSuggestions] = useState([])
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [searchLoading, setSearchLoading] = useState(false)
     const debounceRef = useRef(null)
 
-    useEffect(() => { fetchPatients() }, [])
+    // ReferredBy autocomplete
+    const [referringDoctors, setReferringDoctors] = useState([])
+    const [refDocSuggestions, setRefDocSuggestions] = useState([])
+    const [showRefDocSuggestions, setShowRefDocSuggestions] = useState(false)
+
+    useEffect(() => {
+        fetchPatients()
+        fetchReferringDoctors()
+    }, [])
 
     const fetchPatients = async () => {
         try {
@@ -48,6 +58,33 @@ function RegistratorPatients() {
             console.error(e)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchReferringDoctors = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/referring-doctors', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (res.ok) setReferringDoctors(await res.json())
+        } catch (e) { console.error(e) }
+    }
+
+    const fetchPatientDiagnoses = async (patientId) => {
+        setDiagnosesLoading(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/patient-diagnoses/patient/${patientId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (res.ok) setPatientDiagnoses(await res.json())
+            else setPatientDiagnoses([])
+        } catch (e) {
+            console.error(e)
+            setPatientDiagnoses([])
+        } finally {
+            setDiagnosesLoading(false)
         }
     }
 
@@ -82,8 +119,22 @@ function RegistratorPatients() {
             gender: patient.gender || 'male',
             phone: patient.phone || '',
             passportNumber: patient.passportNumber || '',
+            referredBy: patient.referredBy || '',
             notes: patient.notes || ''
         })
+    }
+
+    const handleRefDocInput = (val) => {
+        setFormData(f => ({ ...f, referredBy: val }))
+        if (val.length >= 2) {
+            const filtered = referringDoctors.filter(d =>
+                d.fullName?.toLowerCase().includes(val.toLowerCase())
+            )
+            setRefDocSuggestions(filtered)
+            setShowRefDocSuggestions(filtered.length > 0)
+        } else {
+            setShowRefDocSuggestions(false)
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -113,7 +164,7 @@ function RegistratorPatients() {
     }
 
     const resetForm = () => {
-        setFormData({ fullName: '', birthDate: '', gender: 'male', phone: '', passportNumber: '', notes: '' })
+        setFormData({ fullName: '', birthDate: '', gender: 'male', phone: '', passportNumber: '', referredBy: '', notes: '' })
         setEditingPatient(null)
         setError('')
         setSuccess('')
@@ -128,6 +179,7 @@ function RegistratorPatients() {
             gender: patient.gender || 'male',
             phone: patient.phone || '',
             passportNumber: patient.passportNumber || '',
+            referredBy: patient.referredBy || '',
             notes: patient.notes || ''
         })
         setError('')
@@ -137,11 +189,14 @@ function RegistratorPatients() {
 
     const handleView = (patient) => {
         setSelectedPatient(patient)
+        setPatientDiagnoses([])
         setShowViewModal(true)
+        fetchPatientDiagnoses(patient._id)
     }
 
     // Helpers
     const formatDate = (d) => d ? new Date(d).toLocaleDateString('uz-UZ') : '-'
+    const formatDateTime = (d) => d ? new Date(d).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'
     const calculateAge = (birthDate) => {
         if (!birthDate) return '-'
         const today = new Date(), b = new Date(birthDate)
@@ -411,11 +466,38 @@ function RegistratorPatients() {
                                     </div>
                                 </div>
 
-                                <div className="pe-field">
-                                    <label className="pe-label">Izohlar</label>
-                                    <textarea className="pe-input" rows="3" placeholder="Qo'shimcha ma'lumotlar"
-                                        value={formData.notes}
-                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+                                <div className="pe-field" style={{ position: 'relative' }}>
+                                    <label className="pe-label">Yo'naltirgan doktor</label>
+                                    <input
+                                        type="text"
+                                        className="pe-input"
+                                        placeholder="Doktor ismi (2 harf yozing...)"
+                                        value={formData.referredBy}
+                                        onChange={(e) => handleRefDocInput(e.target.value)}
+                                        onBlur={() => setTimeout(() => setShowRefDocSuggestions(false), 150)}
+                                        autoComplete="off"
+                                    />
+                                    {showRefDocSuggestions && (
+                                        <ul style={{
+                                            position: 'absolute', top: '100%', left: 0, right: 0,
+                                            background: 'var(--bg-card,#fff)', border: '1px solid var(--border-color,#e2e8f0)',
+                                            borderRadius: '8px', zIndex: 100, margin: 0, padding: '4px 0',
+                                            listStyle: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: '180px', overflowY: 'auto'
+                                        }}>
+                                            {refDocSuggestions.map(d => (
+                                                <li key={d._id}
+                                                    style={{ padding: '8px 14px', cursor: 'pointer', fontSize: '0.9rem' }}
+                                                    onMouseDown={() => {
+                                                        setFormData(f => ({ ...f, referredBy: d.fullName }))
+                                                        setShowRefDocSuggestions(false)
+                                                    }}
+                                                >
+                                                    {d.fullName}
+                                                    {d.organization && <span style={{ color: 'var(--text-muted)', marginLeft: 6, fontSize: '0.8rem' }}>— {d.organization}</span>}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             </div>
                             <div className="pe-footer">
@@ -435,69 +517,124 @@ function RegistratorPatients() {
             {/* View Modal */}
             {showViewModal && selectedPatient && (
                 <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
-                    <div className="modal glass-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-                        <div className="modal-header">
-                            <h2>Bemor ma'lumotlari</h2>
-                            <button className="modal-close" onClick={() => setShowViewModal(false)}>
-                                <X size={24} />
+                    <div className="pv-modal" onClick={(e) => e.stopPropagation()} style={{
+                        background: 'var(--bg-card,#fff)', borderRadius: '16px',
+                        width: '100%', maxWidth: '580px', maxHeight: '88vh',
+                        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.18)'
+                    }}>
+                        {/* Header */}
+                        <div className="pe-header">
+                            <div className="pe-title">
+                                <div className="pe-title-icon"><Eye size={18} /></div>
+                                <h2>Bemor ma'lumotlari</h2>
+                            </div>
+                            <button className="pe-close" onClick={() => setShowViewModal(false)}>
+                                <X size={20} />
                             </button>
                         </div>
-                        <div className="pv-body">
-                            <div className="pv-header">
-                                <div className="pv-avatar">{selectedPatient.fullName?.charAt(0) || 'B'}</div>
-                                <div>
-                                    <h3 className="pv-name">{selectedPatient.fullName}</h3>
-                                    <span className={`pv-gender ${selectedPatient.gender}`}>
-                                        {selectedPatient.gender === 'male' ? '♂ Erkak' : '♀ Ayol'}
-                                    </span>
+
+                        {/* Body */}
+                        <div style={{ overflowY: 'auto', flex: 1 }}>
+                            <div className="pv-body">
+                                <div className="pv-header">
+                                    <div className="pv-avatar">{selectedPatient.fullName?.charAt(0) || 'B'}</div>
+                                    <div>
+                                        <h3 className="pv-name">{selectedPatient.fullName}</h3>
+                                        <span className={`pv-gender ${selectedPatient.gender}`}>
+                                            {selectedPatient.gender === 'male' ? '♂ Erkak' : '♀ Ayol'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="pv-info-grid">
+                                    <div className="pv-info-item">
+                                        <Calendar size={16} className="pv-icon" />
+                                        <div>
+                                            <span className="pv-label">Tug'ilgan sana</span>
+                                            <span className="pv-value">{formatDate(selectedPatient.birthDate)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="pv-info-item">
+                                        <User size={16} className="pv-icon" />
+                                        <div>
+                                            <span className="pv-label">Yoshi</span>
+                                            <span className="pv-value">{calculateAge(selectedPatient.birthDate)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="pv-info-item">
+                                        <Phone size={16} className="pv-icon" />
+                                        <div>
+                                            <span className="pv-label">Telefon</span>
+                                            <span className="pv-value">{selectedPatient.phone || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="pv-info-item">
+                                        <FileText size={16} className="pv-icon" />
+                                        <div>
+                                            <span className="pv-label">Passport</span>
+                                            <span className="pv-value">{selectedPatient.passportNumber || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {selectedPatient.referredBy && (
+                                    <div className="pv-notes" style={{ marginTop: '12px' }}>
+                                        <Stethoscope size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                                        <strong>Yo'naltirgan doktor:</strong> {selectedPatient.referredBy}
+                                    </div>
+                                )}
+
+                                {/* Analizlar tarixi */}
+                                <div className="pv-section" style={{ marginTop: '16px' }}>
+                                    <div className="pv-section-header">
+                                        <h4>
+                                            <ClipboardList size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                                            Analizlar tarixi
+                                        </h4>
+                                    </div>
+                                    {diagnosesLoading ? (
+                                        <div style={{ padding: '12px', textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
+                                            <div className="spinner-sm" style={{ display: 'inline-block', marginRight: 8 }}></div>
+                                            Yuklanmoqda...
+                                        </div>
+                                    ) : patientDiagnoses.length === 0 ? (
+                                        <div className="pv-empty">
+                                            <ClipboardList size={24} />
+                                            <p>Analizlar topilmadi</p>
+                                        </div>
+                                    ) : (
+                                        <div className="pv-diagnoses-list">
+                                            {patientDiagnoses.map((d) => {
+                                                const nameStr = d.diagnosisName || d.diagnosis?.name || 'Analiz'
+                                                const tags = nameStr.split(',').map(s => s.trim()).filter(Boolean)
+                                                return (
+                                                    <div key={d._id} className="pv-diag-item">
+                                                        <div className="pv-dc-tags">
+                                                            <span className="pv-dc-tag">{tags[0]}</span>
+                                                            {tags.length > 1 && (
+                                                                <span className="pv-dc-tag pv-dc-tag--count">+{tags.length - 1} ta</span>
+                                                            )}
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px', fontSize: '0.8rem', color: '#64748b' }}>
+                                                            <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
+                                                            {d.doctor?.fullName && <span>Vrach: {d.doctor.fullName}</span>}
+                                                            {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <div className="pv-info-grid">
-                                <div className="pv-info-item">
-                                    <Calendar size={16} className="pv-icon" />
-                                    <div>
-                                        <span className="pv-label">Tug'ilgan sana</span>
-                                        <span className="pv-value">{formatDate(selectedPatient.birthDate)}</span>
-                                    </div>
-                                </div>
-                                <div className="pv-info-item">
-                                    <User size={16} className="pv-icon" />
-                                    <div>
-                                        <span className="pv-label">Yoshi</span>
-                                        <span className="pv-value">{calculateAge(selectedPatient.birthDate)}</span>
-                                    </div>
-                                </div>
-                                <div className="pv-info-item">
-                                    <Phone size={16} className="pv-icon" />
-                                    <div>
-                                        <span className="pv-label">Telefon</span>
-                                        <span className="pv-value">{selectedPatient.phone || '-'}</span>
-                                    </div>
-                                </div>
-                                <div className="pv-info-item">
-                                    <FileText size={16} className="pv-icon" />
-                                    <div>
-                                        <span className="pv-label">Passport</span>
-                                        <span className="pv-value">{selectedPatient.passportNumber || '-'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            {selectedPatient.referredBy && (
-                                <div className="pv-notes">
-                                    <strong>Yuborgan doktor:</strong> {selectedPatient.referredBy}
-                                </div>
-                            )}
-                            {selectedPatient.notes && (
-                                <div className="pv-notes">
-                                    <strong>Izoh:</strong> {selectedPatient.notes}
-                                </div>
-                            )}
                         </div>
-                        <div className="modal-actions">
-                            <button className="btn btn-secondary" onClick={() => setShowViewModal(false)}>
+
+                        {/* Footer */}
+                        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color,#e2e8f0)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <button className="pe-btn pe-btn-cancel" onClick={() => setShowViewModal(false)}>
                                 Yopish
                             </button>
-                            <button className="btn btn-primary" onClick={() => { setShowViewModal(false); handleEdit(selectedPatient) }}>
+                            <button className="pe-btn pe-btn-save" onClick={() => { setShowViewModal(false); handleEdit(selectedPatient) }}>
                                 <Edit2 size={16} /> Tahrirlash
                             </button>
                         </div>
