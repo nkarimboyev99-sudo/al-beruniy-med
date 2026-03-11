@@ -90,10 +90,10 @@ function ProfileSettings() {
             {success && <div className="alert success" style={{ marginBottom: 16 }}><Check size={16} /> {success}</div>}
             {error && <div className="alert error" style={{ marginBottom: 16 }}><X size={16} /> {error}</div>}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '520px' }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', flexWrap: 'wrap' }}>
 
                 {/* Profil ma'lumotlari */}
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0' }}>
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0', flex: '1 1 320px' }}>
                     <h3 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: 8 }}>
                         <User size={16} color="#2563eb" />
                         Shaxsiy ma'lumotlar
@@ -134,7 +134,7 @@ function ProfileSettings() {
                 </div>
 
                 {/* Parol o'zgartirish */}
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0' }}>
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0', flex: '1 1 320px' }}>
                     <h3 style={{ marginBottom: '4px', fontSize: '1rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Lock size={16} color="#2563eb" />
                         Parolni o'zgartirish
