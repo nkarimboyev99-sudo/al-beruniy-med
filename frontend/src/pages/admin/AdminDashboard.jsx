@@ -76,7 +76,7 @@ function AdminDashboard() {
         { path: '/admin/staff', icon: Users, label: 'Xodimlar' },
         { path: '/admin/patients', icon: UserPlus, label: 'Bemorlar' },
         { path: '/admin/diagnoses', icon: UserPlus, label: 'Analizlar' },
-        { path: '/admin/referring', icon: UserCheck, label: 'Yo\'naltiruvchilar' },
+        { path: '/admin/referring', icon: UserCheck, label: 'Yo\'naltirgan' },
         { path: '/admin/accounting', icon: Wallet, label: 'Hisob-kitob' },
         { path: '/admin/settings', icon: SettingsIcon, label: 'Sozlamalar' },
     ]

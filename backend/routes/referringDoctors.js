@@ -1,5 +1,6 @@
 const express = require('express');
 const ReferringDoctor = require('../models/ReferringDoctor');
+const Patient = require('../models/Patient');
 const { auth, doctorOrAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -9,6 +10,20 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
         const doctors = await ReferringDoctor.find().sort({ fullName: 1 });
         res.json(doctors);
+    } catch (error) {
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Get patients referred by this doctor
+router.get('/:id/patients', auth, doctorOrAdmin, async (req, res) => {
+    try {
+        const doctor = await ReferringDoctor.findById(req.params.id);
+        if (!doctor) return res.status(404).json({ message: 'Topilmadi' });
+        const patients = await Patient.find({ referredBy: doctor.fullName })
+            .select('fullName phone birthDate gender createdAt')
+            .sort({ createdAt: -1 });
+        res.json(patients);
     } catch (error) {
         res.status(500).json({ message: 'Server xatosi' });
     }
