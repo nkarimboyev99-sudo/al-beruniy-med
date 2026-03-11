@@ -16,6 +16,20 @@ import {
 } from 'lucide-react'
 import './DataManagement.css'
 
+const formatPhone = (value) => {
+    // Faqat raqamlarni olish
+    const digits = value.replace(/\D/g, '')
+    // 998 bilan boshlangan yoki boshlanmaganiga qarab
+    const local = digits.startsWith('998') ? digits.slice(3) : digits
+    const d = local.slice(0, 9) // max 9 ta raqam
+    let result = '+998'
+    if (d.length > 0) result += '-' + d.slice(0, 2)
+    if (d.length > 2) result += '-' + d.slice(2, 5)
+    if (d.length > 5) result += '-' + d.slice(5, 7)
+    if (d.length > 7) result += '-' + d.slice(7, 9)
+    return result
+}
+
 function StaffManagement() {
     const [staff, setStaff] = useState([])
     const [loading, setLoading] = useState(true)
@@ -34,14 +48,14 @@ function StaffManagement() {
         password: '',
         fullName: '',
         role: 'doctor',
-        phone: ''
+        phone: '+998'
     })
     const [editFormData, setEditFormData] = useState({
         username: '',
         password: '',
         fullName: '',
         role: 'doctor',
-        phone: '',
+        phone: '+998',
         isActive: true
     })
     const [error, setError] = useState('')
@@ -125,7 +139,7 @@ function StaffManagement() {
 
             if (response.ok) {
                 setSuccess('Xodim muvaffaqiyatli yaratildi!')
-                setFormData({ username: '', password: '', fullName: '', role: 'doctor', phone: '' })
+                setFormData({ username: '', password: '', fullName: '', role: 'doctor', phone: '+998' })
                 fetchStaff()
                 setTimeout(() => { setShowModal(false); setSuccess('') }, 1500)
             } else {
@@ -143,7 +157,7 @@ function StaffManagement() {
             password: '',
             fullName: member.fullName,
             role: member.role,
-            phone: member.phone || '',
+            phone: member.phone ? formatPhone(member.phone) : '+998',
             isActive: member.isActive
         })
         setShowEditModal(true)
@@ -537,9 +551,9 @@ function StaffManagement() {
                                     <input
                                         type="text"
                                         className="form-input"
-                                        placeholder="+998 90 123 45 67"
+                                        placeholder="+998-90-123-45-67"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -617,6 +631,16 @@ function StaffManagement() {
                             </div>
                             <div className="form-row">
                                 <div className="form-group">
+                                    <label className="form-label">Telefon</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        placeholder="+998-90-123-45-67"
+                                        value={editFormData.phone}
+                                        onChange={(e) => setEditFormData({ ...editFormData, phone: formatPhone(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="form-group">
                                     <label className="form-label">Rol</label>
                                     <select
                                         className="form-input"
@@ -627,6 +651,8 @@ function StaffManagement() {
                                         <option value="registrator">Registratsiya</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div className="form-row">
                                 <div className="form-group">
                                     <label className="form-label">Holat</label>
                                     <select
