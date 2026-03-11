@@ -639,7 +639,8 @@ function RegistratorPatients() {
                                                 return (
                                                     <div key={d._id} style={{
                                                         borderRadius: '10px', padding: '10px 14px',
-                                                        background: 'var(--bg-secondary, #f1f5f9)',
+                                                        background: '#fff',
+                                                        border: '1px solid #e2e8f0',
                                                         borderLeft: '3px solid #3b82f6'
                                                     }}>
                                                         {/* Kategoriyalar ro'yxati */}
@@ -648,7 +649,7 @@ function RegistratorPatients() {
                                                                 <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                     <span style={{
                                                                         fontSize: '0.83rem', fontWeight: 600,
-                                                                        color: 'var(--text-primary, #1e293b)'
+                                                                        color: '#1e293b'
                                                                     }}>{cat}</span>
                                                                     <span style={{
                                                                         fontSize: '0.75rem', color: '#fff',
@@ -660,7 +661,7 @@ function RegistratorPatients() {
                                                         </div>
                                                         {/* Meta + edit */}
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.77rem', color: 'var(--text-muted, #64748b)' }}>
+                                                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.77rem', color: '#64748b' }}>
                                                                 <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
                                                                 {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
                                                             </div>
