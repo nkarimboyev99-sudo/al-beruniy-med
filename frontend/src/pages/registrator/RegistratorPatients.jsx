@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     UserPlus, Plus, Search, Edit2, Eye,
     Phone, Calendar, User, FileText,
-    Save, Check, X, Stethoscope, ClipboardList
+    Save, Check, X, Stethoscope, ClipboardList, Printer
 } from 'lucide-react'
 import '../admin/DataManagement.css'
 import '../admin/rfp.css'
@@ -55,6 +55,77 @@ function RegistratorPatients() {
             const res = await fetch('/api/diagnoses', { headers: { 'Authorization': `Bearer ${token}` } })
             if (res.ok) setDiagnosesList(await res.json())
         } catch (e) { console.error(e) }
+    }
+
+    const printReceipt = (d, patient) => {
+        const now = new Date()
+        const dateStr = new Date(d.createdAt || now).toLocaleString('uz-UZ')
+        const registrator = JSON.parse(localStorage.getItem('user') || '{}')
+        const clinic = JSON.parse(localStorage.getItem('clinicSettings') || '{}')
+        const clinicName = clinic.clinicName || 'Al-Beruniy Med'
+        const clinicAddress = clinic.address || ''
+        const clinicPhone = clinic.phone || ''
+        const birthStr = patient?.birthDate ? new Date(patient.birthDate).toLocaleDateString('uz-UZ') : ''
+        const barcodeVal = (patient?._id || '').slice(-8) || '00000000'
+        const prices = d.diagnosisPrices || []
+        const names = (d.diagnosisName || '').split(',').map(s => s.trim()).filter(Boolean)
+        const discount = d.discount || 0
+        const total = d.totalAmount || 0
+        const payMethod = d.paymentMethod === 'card' ? 'Karta' : d.paymentMethod === 'transfer' ? "O'tkazma" : 'Naqd'
+
+        const rows = names.map(name => {
+            const priceObj = prices.find(p => p.name === name)
+            const price = priceObj?.price || 0
+            return `<tr><td>${name}</td><td>Laboratoriya</td><td>${price.toLocaleString()}</td></tr>`
+        }).join('')
+
+        const win = window.open('', '_blank')
+        if (!win) { alert("Popup bloklandi! Ruxsat bering."); return }
+        win.document.write(`<!DOCTYPE html><html><head><title>Chek</title><meta charset="utf-8"/>
+<style>
+    @page { margin: 3mm 4mm; size: 80mm auto; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; width: 74mm; font-size: 11px; color: #000; background: #fff; }
+    .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+    .clinic-name { font-size: 13px; font-weight: 900; margin-top: 4px; }
+    .clinic-info { font-size: 10px; line-height: 1.6; margin-top: 3px; }
+    .receipt-title { font-size: 14px; font-weight: 900; text-transform: uppercase; margin: 8px 0 0; }
+    .patient-block { text-align: center; margin: 8px 0; font-size: 11px; line-height: 1.9; border-bottom: 1px dashed #000; padding-bottom: 8px; }
+    .patient-block div { display: flex; justify-content: center; gap: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+    th { font-weight: 700; text-align: left; padding: 5px 4px; border: 1px solid #000; }
+    td { padding: 5px 4px; border: 1px solid #000; vertical-align: top; word-break: break-word; }
+    .total-section { border-top: 2px solid #000; margin-top: 0; padding: 7px 4px; text-align: center; font-size: 13px; font-weight: 900; text-transform: uppercase; }
+    .discount-row { text-align: center; font-size: 11px; padding: 3px 0; border-top: 1px dotted #000; }
+    .footer { text-align: center; font-size: 10px; padding-top: 6px; border-top: 1px dashed #000; margin-top: 4px; }
+    @media print { body { width: 74mm; } }
+</style></head><body>
+    <div class="header">
+        <div class="clinic-name">${clinicName}</div>
+        <div class="clinic-info">
+            ${clinicAddress ? `<div>Manzil: ${clinicAddress}</div>` : ''}
+            ${clinicPhone ? `<div>Tel: ${clinicPhone}</div>` : ''}
+        </div>
+        <div class="receipt-title">To'lov uchun hisob</div>
+    </div>
+    <div class="patient-block">
+        <div><b>Bemor:</b>&nbsp;${patient?.fullName || ''}</div>
+        ${patient?.phone ? `<div><b>Telefon:</b>&nbsp;${patient.phone}</div>` : ''}
+        ${birthStr ? `<div><b>Tug'ilgan sana:</b>&nbsp;${birthStr}</div>` : ''}
+        <div><b>Registrator:</b>&nbsp;${registrator.fullName || registrator.username || ''}</div>
+        <div><b>Sana:</b>&nbsp;${dateStr}</div>
+    </div>
+    <table>
+        <thead><tr><th style="width:52%">Xizmat</th><th style="width:26%">Bo'lim</th><th style="width:22%">Summa</th></tr></thead>
+        <tbody>${rows}</tbody>
+    </table>
+    ${discount > 0 ? `<div class="discount-row">Chegirma: − ${discount.toLocaleString()} so'm</div>` : ''}
+    <div class="discount-row">To'lov: ${payMethod}</div>
+    <div class="total-section">Jami: ${total.toLocaleString()} so'm</div>
+    <div class="footer">Ma'lumotlarning to'g'riligini tekshiring!</div>
+</body></html>`)
+        win.document.close()
+        setTimeout(() => { win.print(); win.close() }, 800)
     }
 
     // Test nomidan kategoriya nomini olish
@@ -659,22 +730,31 @@ function RegistratorPatients() {
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        {/* Meta + edit */}
+                                                        {/* Meta + tugmalar */}
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.77rem', color: '#64748b' }}>
                                                                 <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
                                                                 {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
                                                             </div>
-                                                            <button
-                                                                className="pm-act-btn pm-act-edit"
-                                                                title="Tahrirlash"
-                                                                onClick={() => {
-                                                                    setShowViewModal(false)
-                                                                    navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
-                                                                }}
-                                                            >
-                                                                <Edit2 size={14} />
-                                                            </button>
+                                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                                <button
+                                                                    className="pm-act-btn pm-act-view"
+                                                                    title="Chek chiqarish"
+                                                                    onClick={() => printReceipt(d, selectedPatient)}
+                                                                >
+                                                                    <Printer size={14} />
+                                                                </button>
+                                                                <button
+                                                                    className="pm-act-btn pm-act-edit"
+                                                                    title="Tahrirlash"
+                                                                    onClick={() => {
+                                                                        setShowViewModal(false)
+                                                                        navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
+                                                                    }}
+                                                                >
+                                                                    <Edit2 size={14} />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 )
