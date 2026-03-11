@@ -553,7 +553,7 @@ function RegistratorPatients() {
                         boxShadow: '0 20px 60px rgba(0,0,0,0.18)'
                     }}>
                         {/* Header */}
-                        <div className="pe-header">
+                        <div className="pe-header" style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', borderRadius: '16px 16px 0 0' }}>
                             <div className="pe-title">
                                 <div className="pe-title-icon"><Eye size={18} /></div>
                                 <h2>Bemor ma'lumotlari</h2>
@@ -564,7 +564,7 @@ function RegistratorPatients() {
                         </div>
 
                         {/* Body */}
-                        <div style={{ overflowY: 'auto', flex: 1 }}>
+                        <div style={{ overflowY: 'auto', flex: 1, background: '#fff' }}>
                             <div className="pv-body">
                                 <div className="pv-header">
                                     <div className="pv-avatar">{selectedPatient.fullName?.charAt(0) || 'B'}</div>
@@ -686,7 +686,7 @@ function RegistratorPatients() {
                         </div>
 
                         {/* Footer */}
-                        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color,#e2e8f0)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <div style={{ padding: '16px 24px', background: '#fff', borderTop: '1px solid #e2e8f0', borderRadius: '0 0 16px 16px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                             <button className="pe-btn pe-btn-cancel" onClick={() => setShowViewModal(false)}>
                                 Yopish
                             </button>
