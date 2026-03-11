@@ -91,7 +91,13 @@
     flex-direction: column;
     gap: 14px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f9fafb;
 }
+.df-sidebar::-webkit-scrollbar { width: 5px; }
+.df-sidebar::-webkit-scrollbar-track { background: #f9fafb; }
+.df-sidebar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+.df-sidebar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 /* Compact patient card */
 .df-patient-compact {
@@ -329,7 +335,13 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f9fafb;
 }
+.df-main::-webkit-scrollbar { width: 5px; }
+.df-main::-webkit-scrollbar-track { background: #f9fafb; }
+.df-main::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+.df-main::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 .df-alert {
     display: flex;
