@@ -107,16 +107,22 @@ router.get('/users', auth, async (req, res) => {
     }
 });
 
-// Update user (admin only)
+// Update user (admin yoki o'zi uchun)
 router.put('/users/:id', auth, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Faqat admin uchun' });
+        const isSelf = req.user.id === req.params.id || req.user._id?.toString() === req.params.id;
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isAdmin && !isSelf) {
+            return res.status(403).json({ message: 'Ruxsat yo\'q' });
         }
 
         const { fullName, username, phone, role, isActive, password } = req.body;
 
-        const updateData = { fullName, username, phone, role, isActive };
+        // O'zi tahrirlasa faqat fullName, phone, password ga ruxsat
+        const updateData = isAdmin
+            ? { fullName, username, phone, role, isActive }
+            : { fullName, phone };
 
         // Agar yangi parol berilgan bo'lsa, uni ham yangilash
         if (password && password.trim() !== '') {
