@@ -24,6 +24,7 @@ function RegistratorPatients() {
     const [selectedPatient, setSelectedPatient] = useState(null)
     const [patientDiagnoses, setPatientDiagnoses] = useState([])
     const [diagnosesLoading, setDiagnosesLoading] = useState(false)
+    const [diagnosesList, setDiagnosesList] = useState([])
 
     const [formData, setFormData] = useState({
         fullName: '', birthDate: '', gender: 'male', phone: '', passportNumber: '', referredBy: '', notes: ''
@@ -45,7 +46,35 @@ function RegistratorPatients() {
     useEffect(() => {
         fetchPatients()
         fetchReferringDoctors()
+        fetchDiagnosesList()
     }, [])
+
+    const fetchDiagnosesList = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/diagnoses', { headers: { 'Authorization': `Bearer ${token}` } })
+            if (res.ok) setDiagnosesList(await res.json())
+        } catch (e) { console.error(e) }
+    }
+
+    // Test nomidan kategoriya nomini olish
+    const getCategoryForTest = (testName) => {
+        const match = diagnosesList.find(d => d.name === testName)
+        return match?.category?.name || null
+    }
+
+    // diagnosisName stringini kategoriyalarga guruhlash
+    const groupByCategory = (diagnosisName) => {
+        const tags = (diagnosisName || '').split(',').map(s => s.trim()).filter(Boolean)
+        const groups = {}
+        const order = []
+        tags.forEach(tag => {
+            const cat = getCategoryForTest(tag) || 'Boshqa'
+            if (!groups[cat]) { groups[cat] = []; order.push(cat) }
+            groups[cat].push(tag)
+        })
+        return order.map(cat => ({ cat, tests: groups[cat] }))
+    }
 
     const fetchPatients = async () => {
         try {
@@ -606,37 +635,46 @@ function RegistratorPatients() {
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {patientDiagnoses.map((d) => {
                                                 const nameStr = d.diagnosisName || d.diagnosis?.name || 'Analiz'
-                                                const tags = nameStr.split(',').map(s => s.trim()).filter(Boolean)
+                                                const catGroups = groupByCategory(nameStr)
                                                 return (
                                                     <div key={d._id} style={{
                                                         border: '1px solid #e2e8f0', borderRadius: '10px',
-                                                        padding: '10px 14px', background: '#f8fafc',
-                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px'
+                                                        padding: '10px 14px', background: '#f8fafc'
                                                     }}>
-                                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '4px' }}>
-                                                                <span className="pv-dc-tag">{tags[0]}</span>
-                                                                {tags.length > 1 && (
-                                                                    <span className="pv-dc-tag pv-dc-tag--count">+{tags.length - 1} ta</span>
-                                                                )}
-                                                            </div>
+                                                        {/* Kategoriyalar ro'yxati */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                                                            {catGroups.map(({ cat, tests }) => (
+                                                                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{
+                                                                        fontSize: '0.82rem', fontWeight: 600,
+                                                                        color: '#1e40af', background: '#eff6ff',
+                                                                        borderRadius: '6px', padding: '2px 8px',
+                                                                        whiteSpace: 'nowrap'
+                                                                    }}>{cat}</span>
+                                                                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                                                                        {tests.length} ta analiz
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        {/* Meta ma'lumotlar + edit tugmasi */}
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                                                             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.78rem', color: '#64748b' }}>
                                                                 <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
-                                                                {d.doctor?.fullName && <span>Vrach: {d.doctor.fullName}</span>}
                                                                 {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
                                                             </div>
+                                                            <button
+                                                                className="pm-act-btn pm-act-edit"
+                                                                title="Tahrirlash"
+                                                                onClick={() => {
+                                                                    setShowViewModal(false)
+                                                                    navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
+                                                                }}
+                                                                style={{ flexShrink: 0 }}
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            className="pm-act-btn pm-act-edit"
-                                                            title="Tahrirlash"
-                                                            onClick={() => {
-                                                                setShowViewModal(false)
-                                                                navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
-                                                            }}
-                                                            style={{ flexShrink: 0 }}
-                                                        >
-                                                            <Edit2 size={14} />
-                                                        </button>
                                                     </div>
                                                 )
                                             })}
