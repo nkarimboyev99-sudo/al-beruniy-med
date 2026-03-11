@@ -8,15 +8,10 @@ const router = express.Router();
 // Get all patients
 router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
-        // viewScope filtri
+        // viewScope filtri — faqat registrator uchun
         let query = {};
-        if (req.user.viewScope === 'own') {
-            if (req.user.role === 'registrator') {
-                query.registeredBy = req.user._id;
-            } else if (req.user.role === 'doctor') {
-                const myPatientIds = await PatientDiagnosis.find({ doctor: req.user._id, isActive: true }).distinct('patient');
-                query._id = { $in: myPatientIds };
-            }
+        if (req.user.role === 'registrator' && req.user.viewScope === 'own') {
+            query.registeredBy = req.user._id;
         }
 
         const patients = await Patient.find(query)
