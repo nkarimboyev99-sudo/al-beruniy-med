@@ -11,10 +11,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
         // viewScope filtri
         let query = {};
         if (req.user.viewScope === 'own') {
-            if (req.user.role === 'registrator') {
-                // Faqat o'zi ro'yxatga olgan bemorlar
-                query.registeredBy = req.user._id;
-            } else if (req.user.role === 'doctor') {
+            if (req.user.role === 'doctor') {
                 // O'zi kiritgan analizlar YOKI natijalari kiritilmagan bemorlar
                 const [myPatients, unfinishedPatients] = await Promise.all([
                     PatientDiagnosis.find({ doctor: req.user._id, isActive: true }).distinct('patient'),

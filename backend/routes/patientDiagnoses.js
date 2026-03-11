@@ -25,10 +25,13 @@ router.get('/my', auth, doctorOrAdmin, async (req, res) => {
 // Get all diagnoses for a specific patient
 router.get('/patient/:patientId', auth, doctorOrAdmin, async (req, res) => {
     try {
-        // Doktor + viewScope=own bo'lsa faqat o'zi qo'ygan analizlarni ko'rsatish
+        // Doktor + viewScope=own bo'lsa: o'zi qo'ygan + bajarilmagan analizlarni ko'rsatish
         const filter = { patient: req.params.patientId, isActive: true };
         if (req.user.role === 'doctor' && req.user.viewScope === 'own') {
-            filter.doctor = req.user._id;
+            filter.$or = [
+                { doctor: req.user._id },
+                { 'results.savedAt': { $exists: false } }
+            ];
         }
         const diagnoses = await PatientDiagnosis.find(filter)
             .populate({ path: 'diagnosis', populate: { path: 'category', select: 'name price' } })
