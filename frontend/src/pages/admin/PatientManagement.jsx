@@ -2974,13 +2974,15 @@ function PatientManagement({ readOnly = false }) {
                                                             <Printer size={14} />
                                                             Chop etish
                                                         </button>
-                                                        <button
-                                                            className="pv-dc-btn pv-dc-btn--chek"
-                                                            onClick={() => handlePrintPaymentReceipt(diagnosis)}
-                                                        >
-                                                            <FileText size={14} />
-                                                            Chek
-                                                        </button>
+                                                        {getBase() !== '/doctor' && (
+                                                            <button
+                                                                className="pv-dc-btn pv-dc-btn--chek"
+                                                                onClick={() => handlePrintPaymentReceipt(diagnosis)}
+                                                            >
+                                                                <FileText size={14} />
+                                                                Chek
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             )
