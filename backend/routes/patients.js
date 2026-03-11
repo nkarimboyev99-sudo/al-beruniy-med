@@ -12,13 +12,15 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
         let query = {};
         if (req.user.viewScope === 'own') {
             if (req.user.role === 'doctor') {
-                // O'zi kiritgan analizlar YOKI natijalari kiritilmagan bemorlar
-                const [myPatients, unfinishedPatients] = await Promise.all([
+                // O'zi kiritgan, o'zi natija saqlagan YOKI natijalari kiritilmagan bemorlar
+                const [myPatients, mySavedPatients, unfinishedPatients] = await Promise.all([
                     PatientDiagnosis.find({ doctor: req.user._id, isActive: true }).distinct('patient'),
+                    PatientDiagnosis.find({ 'results.savedBy': req.user._id, isActive: true }).distinct('patient'),
                     PatientDiagnosis.find({ isActive: true, 'results.savedAt': { $exists: false } }).distinct('patient')
                 ]);
                 const combined = [...new Set([
                     ...myPatients.map(id => id.toString()),
+                    ...mySavedPatients.map(id => id.toString()),
                     ...unfinishedPatients.map(id => id.toString())
                 ])];
                 query._id = { $in: combined };
@@ -37,6 +39,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
         if (req.user.role === 'doctor' && req.user.viewScope === 'own') {
             diagFilter.$or = [
                 { doctor: req.user._id },
+                { 'results.savedBy': req.user._id },
                 { 'results.savedAt': { $exists: false } }
             ];
         }

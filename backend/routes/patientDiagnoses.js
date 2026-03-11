@@ -30,6 +30,7 @@ router.get('/patient/:patientId', auth, doctorOrAdmin, async (req, res) => {
         if (req.user.role === 'doctor' && req.user.viewScope === 'own') {
             filter.$or = [
                 { doctor: req.user._id },
+                { 'results.savedBy': req.user._id },
                 { 'results.savedAt': { $exists: false } }
             ];
         }
