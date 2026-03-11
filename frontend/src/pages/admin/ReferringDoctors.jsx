@@ -2,6 +2,18 @@ import { useState, useEffect } from 'react'
 import { UserCheck, Plus, Edit2, Trash2, X, Check, Search, Phone, Building2, Save, Eye, Calendar, Users } from 'lucide-react'
 import './DataManagement.css'
 
+const formatPhone = (value) => {
+    const digits = value.replace(/\D/g, '')
+    const local = digits.startsWith('998') ? digits.slice(3) : digits
+    const d = local.slice(0, 9)
+    let result = '+998'
+    if (d.length > 0) result += '-' + d.slice(0, 2)
+    if (d.length > 2) result += '-' + d.slice(2, 5)
+    if (d.length > 5) result += '-' + d.slice(5, 7)
+    if (d.length > 7) result += '-' + d.slice(7, 9)
+    return result
+}
+
 function ReferringDoctors() {
     const [doctors, setDoctors] = useState([])
     const [loading, setLoading] = useState(true)
@@ -14,7 +26,7 @@ function ReferringDoctors() {
     const [patientsLoading, setPatientsLoading] = useState(false)
     const [editingDoctor, setEditingDoctor] = useState(null)
     const [deletingDoctor, setDeletingDoctor] = useState(null)
-    const [formData, setFormData] = useState({ fullName: '', phone: '', organization: '' })
+    const [formData, setFormData] = useState({ fullName: '', phone: '+998', organization: '' })
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
@@ -54,7 +66,7 @@ function ReferringDoctors() {
 
     const openAdd = () => {
         setEditingDoctor(null)
-        setFormData({ fullName: '', phone: '', organization: '' })
+        setFormData({ fullName: '', phone: '+998', organization: '' })
         setError('')
         setSuccess('')
         setShowModal(true)
@@ -62,7 +74,7 @@ function ReferringDoctors() {
 
     const openEdit = (doctor) => {
         setEditingDoctor(doctor)
-        setFormData({ fullName: doctor.fullName, phone: doctor.phone || '', organization: doctor.organization || '' })
+        setFormData({ fullName: doctor.fullName, phone: doctor.phone ? formatPhone(doctor.phone) : '+998', organization: doctor.organization || '' })
         setError('')
         setSuccess('')
         setShowModal(true)
@@ -363,9 +375,9 @@ function ReferringDoctors() {
                                     <input
                                         type="text"
                                         className="form-input"
-                                        placeholder="+998 90 123 45 67"
+                                        placeholder="+998-90-123-45-67"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
                                     />
                                 </div>
                                 <div className="form-group">
