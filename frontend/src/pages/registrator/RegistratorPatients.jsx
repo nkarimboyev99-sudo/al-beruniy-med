@@ -632,34 +632,35 @@ function RegistratorPatients() {
                                             <p>Analizlar topilmadi</p>
                                         </div>
                                     ) : (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                             {patientDiagnoses.map((d) => {
                                                 const nameStr = d.diagnosisName || d.diagnosis?.name || 'Analiz'
                                                 const catGroups = groupByCategory(nameStr)
                                                 return (
                                                     <div key={d._id} style={{
-                                                        border: '1px solid #e2e8f0', borderRadius: '10px',
-                                                        padding: '10px 14px', background: '#f8fafc'
+                                                        borderRadius: '10px', padding: '10px 14px',
+                                                        background: 'var(--bg-secondary, #f1f5f9)',
+                                                        borderLeft: '3px solid #3b82f6'
                                                     }}>
                                                         {/* Kategoriyalar ro'yxati */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '8px' }}>
                                                             {catGroups.map(({ cat, tests }) => (
-                                                                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                     <span style={{
-                                                                        fontSize: '0.82rem', fontWeight: 600,
-                                                                        color: '#1e40af', background: '#eff6ff',
-                                                                        borderRadius: '6px', padding: '2px 8px',
-                                                                        whiteSpace: 'nowrap'
+                                                                        fontSize: '0.83rem', fontWeight: 600,
+                                                                        color: 'var(--text-primary, #1e293b)'
                                                                     }}>{cat}</span>
-                                                                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                                                                        {tests.length} ta analiz
-                                                                    </span>
+                                                                    <span style={{
+                                                                        fontSize: '0.75rem', color: '#fff',
+                                                                        background: '#3b82f6', borderRadius: '20px',
+                                                                        padding: '1px 7px', fontWeight: 500
+                                                                    }}>{tests.length} ta</span>
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        {/* Meta ma'lumotlar + edit tugmasi */}
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                                                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.78rem', color: '#64748b' }}>
+                                                        {/* Meta + edit */}
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontSize: '0.77rem', color: 'var(--text-muted, #64748b)' }}>
                                                                 <span><Calendar size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />{formatDateTime(d.createdAt)}</span>
                                                                 {d.totalAmount > 0 && <span style={{ fontWeight: 600, color: '#059669' }}>{d.totalAmount.toLocaleString()} so'm</span>}
                                                             </div>
@@ -670,7 +671,6 @@ function RegistratorPatients() {
                                                                     setShowViewModal(false)
                                                                     navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
                                                                 }}
-                                                                style={{ flexShrink: 0 }}
                                                             >
                                                                 <Edit2 size={14} />
                                                             </button>
