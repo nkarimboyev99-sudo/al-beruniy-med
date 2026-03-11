@@ -32,7 +32,15 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
             .sort({ createdAt: -1 });
 
         // PatientDiagnosis kolleksiyasidan har bir bemor uchun analiz holatini olish
-        const allDiagnoses = await PatientDiagnosis.find({ isActive: true })
+        // Doktor + viewScope=own bo'lsa faqat o'zi va bajarilmaganlarni hisoblash
+        let diagFilter = { isActive: true };
+        if (req.user.role === 'doctor' && req.user.viewScope === 'own') {
+            diagFilter.$or = [
+                { doctor: req.user._id },
+                { 'results.savedAt': { $exists: false } }
+            ];
+        }
+        const allDiagnoses = await PatientDiagnosis.find(diagFilter)
             .select('patient results.savedAt');
 
         const diagnosisMap = {};
