@@ -8,10 +8,24 @@ const router = express.Router();
 // Get all patients
 router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
-        // viewScope filtri — faqat registrator uchun
+        // viewScope filtri
         let query = {};
-        if (req.user.role === 'registrator' && req.user.viewScope === 'own') {
-            query.registeredBy = req.user._id;
+        if (req.user.viewScope === 'own') {
+            if (req.user.role === 'registrator') {
+                // Faqat o'zi ro'yxatga olgan bemorlar
+                query.registeredBy = req.user._id;
+            } else if (req.user.role === 'doctor') {
+                // O'zi kiritgan analizlar YOKI natijalari kiritilmagan bemorlar
+                const [myPatients, unfinishedPatients] = await Promise.all([
+                    PatientDiagnosis.find({ doctor: req.user._id, isActive: true }).distinct('patient'),
+                    PatientDiagnosis.find({ isActive: true, 'results.savedAt': { $exists: false } }).distinct('patient')
+                ]);
+                const combined = [...new Set([
+                    ...myPatients.map(id => id.toString()),
+                    ...unfinishedPatients.map(id => id.toString())
+                ])];
+                query._id = { $in: combined };
+            }
         }
 
         const patients = await Patient.find(query)

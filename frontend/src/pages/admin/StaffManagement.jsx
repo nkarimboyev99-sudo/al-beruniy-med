@@ -331,25 +331,30 @@ function StaffManagement() {
                                             }}
                                         >
                                             {/* Toggle switch */}
-                                            <div style={{
-                                                width: '36px', height: '20px', borderRadius: '10px',
-                                                background: member.viewScope === 'all' ? '#16a34a' : '#d1d5db',
-                                                position: 'relative', transition: 'background 0.25s', flexShrink: 0
-                                            }}>
-                                                <div style={{
-                                                    width: '14px', height: '14px', borderRadius: '50%',
-                                                    background: '#fff', position: 'absolute', top: '3px',
-                                                    left: member.viewScope === 'all' ? '19px' : '3px',
-                                                    transition: 'left 0.25s',
-                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.25)'
-                                                }} />
-                                            </div>
-                                            <span style={{
-                                                fontSize: '0.82rem', fontWeight: 600,
-                                                color: member.viewScope === 'all' ? '#16a34a' : '#6b7280'
-                                            }}>
-                                                {member.viewScope === 'all' ? 'Barcha' : "O'z"}
-                                            </span>
+                                            {(() => {
+                                                const isAll = !member.viewScope || member.viewScope === 'all'
+                                                return <>
+                                                    <div style={{
+                                                        width: '36px', height: '20px', borderRadius: '10px',
+                                                        background: isAll ? '#16a34a' : '#d1d5db',
+                                                        position: 'relative', transition: 'background 0.25s', flexShrink: 0
+                                                    }}>
+                                                        <div style={{
+                                                            width: '14px', height: '14px', borderRadius: '50%',
+                                                            background: '#fff', position: 'absolute', top: '3px',
+                                                            left: isAll ? '19px' : '3px',
+                                                            transition: 'left 0.25s',
+                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.25)'
+                                                        }} />
+                                                    </div>
+                                                    <span style={{
+                                                        fontSize: '0.82rem', fontWeight: 600,
+                                                        color: isAll ? '#16a34a' : '#6b7280'
+                                                    }}>
+                                                        {isAll ? 'Barcha' : "O'z"}
+                                                    </span>
+                                                </>
+                                            })()}
                                         </div>
                                     </td>
                                     <td>

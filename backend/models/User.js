@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
     viewScope: {
         type: String,
         enum: ['own', 'all'],
-        default: 'own'
+        default: 'all'
     }
 }, {
     timestamps: true
