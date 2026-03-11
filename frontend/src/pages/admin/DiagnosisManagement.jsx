@@ -909,190 +909,245 @@ function DiagnosisManagement() {
             {/* Category Management Modal */}
             {showCategoryModal && (
                 <div className="modal-overlay" onClick={() => { setShowCategoryModal(false); resetCategoryForm(); }}>
-                    <div className="modal glass-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-                        <div className="modal-header">
-                            <h2>Kategoriyalarni boshqarish</h2>
-                            <button className="modal-close" onClick={() => { setShowCategoryModal(false); resetCategoryForm(); }}>
-                                <X size={24} />
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: '#fff', borderRadius: '16px', width: '90vw', maxWidth: '560px',
+                            maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.18)', overflow: 'hidden'
+                        }}
+                    >
+                        {/* Header */}
+                        <div style={{
+                            padding: '20px 24px', borderBottom: '1px solid #e5e7eb',
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                {editingCategory && (
+                                    <button
+                                        onClick={resetCategoryForm}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', padding: '4px' }}
+                                        title="Orqaga"
+                                    >
+                                        <ArrowLeft size={20} />
+                                    </button>
+                                )}
+                                <Tag size={20} color="#2563eb" />
+                                <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#111827' }}>
+                                    {editingCategory ? `Tahrirlash: ${editingCategory.name}` : 'Kategoriyalar'}
+                                </h2>
+                            </div>
+                            <button
+                                onClick={() => { setShowCategoryModal(false); resetCategoryForm(); }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: '4px', borderRadius: '6px' }}
+                            >
+                                <X size={22} />
                             </button>
                         </div>
 
-                        <div style={{ padding: '20px' }}>
-                            {/* Category List */}
-                            <div style={{ marginBottom: '20px' }}>
-                                <h3 style={{ marginBottom: '12px', fontSize: '14px', color: '#6b7280' }}>
-                                    Mavjud kategoriyalar ({categories.length})
-                                </h3>
-                                {categories.length === 0 ? (
-                                    <p style={{ color: '#9ca3af', textAlign: 'center', padding: '20px' }}>
-                                        Hali kategoriya yo'q
-                                    </p>
-                                ) : (
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                        {categories.map(cat => (
-                                            <div key={cat._id} style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                padding: '8px 12px',
-                                                background: '#f1f5f9',
-                                                borderRadius: '8px',
-                                                border: '1px solid #e2e8f0',
-                                                color: '#374151'
-                                            }}>
-                                                <span>{cat.name}</span>
-                                                <button
-                                                    onClick={() => openCategoryModal(cat)}
-                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-500)', padding: '4px' }}
-                                                    title="Tahrirlash"
-                                                >
-                                                    <Edit2 size={14} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteCategory(cat._id)}
-                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                                                    title="O'chirish"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                        {/* Body */}
+                        <div className="cat-modal-body" style={{
+                            flex: 1, overflowY: 'auto', padding: '24px',
+                            scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f9fafb'
+                        }}>
 
-                            {/* Add/Edit Category Form */}
-                            <form onSubmit={handleCategorySubmit} style={{ borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}>
-                                <h3 style={{ marginBottom: '12px', fontSize: '14px', color: '#6b7280' }}>
-                                    {editingCategory ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya qo\'shish'}
-                                </h3>
+                            {/* ===== EDIT MODE ===== */}
+                            {editingCategory ? (
+                                <form onSubmit={handleCategorySubmit}>
+                                    {categoryError && <div className="alert error" style={{ marginBottom: '16px' }}>{categoryError}</div>}
+                                    {categorySuccess && <div className="alert success" style={{ marginBottom: '16px' }}><Check size={16} /> {categorySuccess}</div>}
 
-                                {categoryError && <div className="alert error">{categoryError}</div>}
-                                {categorySuccess && <div className="alert success"><Check size={18} /> {categorySuccess}</div>}
-
-                                <div className="form-group">
-                                    <label className="form-label">Kategoriya nomi *</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        placeholder="Masalan: Qon tahlili"
-                                        value={categoryFormData.name}
-                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="form-row">
                                     <div className="form-group">
-                                        <label className="form-label">Kod</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            placeholder="Masalan: BLOOD"
-                                            value={categoryFormData.code}
-                                            onChange={(e) => setCategoryFormData({ ...categoryFormData, code: e.target.value })}
-                                        />
+                                        <label className="form-label" style={{ color: '#374151' }}>Kategoriya nomi *</label>
+                                        <input type="text" className="form-input" style={{ color: '#111827', background: '#fff' }}
+                                            placeholder="Masalan: Qon tahlili"
+                                            value={categoryFormData.name}
+                                            onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                                            required />
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Tavsif</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            placeholder="Qisqa tavsif"
-                                            value={categoryFormData.description}
-                                            onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })}
-                                        />
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label" style={{ color: '#374151' }}>Kod</label>
+                                            <input type="text" className="form-input" style={{ color: '#111827', background: '#fff' }}
+                                                placeholder="BLOOD"
+                                                value={categoryFormData.code}
+                                                onChange={(e) => setCategoryFormData({ ...categoryFormData, code: e.target.value })} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label" style={{ color: '#374151' }}>Tavsif</label>
+                                            <input type="text" className="form-input" style={{ color: '#111827', background: '#fff' }}
+                                                placeholder="Qisqa tavsif"
+                                                value={categoryFormData.description}
+                                                onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })} />
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Analizlarni yashirish toggle */}
-                                <div className="form-group">
-                                    <label className="form-label" style={{ marginBottom: '10px' }}>Analizlarni yashirish</label>
-                                    <div
-                                        onClick={() => setCategoryFormData(prev => ({
-                                            ...prev,
-                                            hideAnalyses: !prev.hideAnalyses,
-                                            price: prev.hideAnalyses ? 0 : prev.price
-                                        }))}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '12px',
-                                            cursor: 'pointer', padding: '12px 16px',
-                                            background: categoryFormData.hideAnalyses ? '#eff6ff' : '#f9fafb',
-                                            border: `1.5px solid ${categoryFormData.hideAnalyses ? '#2563eb' : '#e5e7eb'}`,
-                                            borderRadius: '10px', transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        <div style={{
-                                            width: '44px', height: '24px', borderRadius: '12px',
-                                            background: categoryFormData.hideAnalyses ? '#2563eb' : '#d1d5db',
-                                            position: 'relative', transition: 'background 0.2s', flexShrink: 0
-                                        }}>
+                                    {/* Analizlarni yashirish toggle */}
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ color: '#374151', marginBottom: '8px', display: 'block' }}>Analizlarni yashirish</label>
+                                        <div
+                                            onClick={() => setCategoryFormData(prev => ({ ...prev, hideAnalyses: !prev.hideAnalyses, price: prev.hideAnalyses ? 0 : prev.price }))}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
+                                                padding: '12px 16px', borderRadius: '10px', transition: 'all 0.2s',
+                                                background: categoryFormData.hideAnalyses ? '#eff6ff' : '#f9fafb',
+                                                border: `1.5px solid ${categoryFormData.hideAnalyses ? '#2563eb' : '#e5e7eb'}`
+                                            }}
+                                        >
                                             <div style={{
-                                                width: '18px', height: '18px', borderRadius: '50%',
-                                                background: '#fff', position: 'absolute',
-                                                top: '3px', left: categoryFormData.hideAnalyses ? '23px' : '3px',
-                                                transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                                            }} />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111827' }}>
-                                                {categoryFormData.hideAnalyses ? 'Yashirilgan' : 'Ko\'rinadi'}
+                                                width: '44px', height: '24px', borderRadius: '12px', flexShrink: 0,
+                                                background: categoryFormData.hideAnalyses ? '#2563eb' : '#d1d5db',
+                                                position: 'relative', transition: 'background 0.2s'
+                                            }}>
+                                                <div style={{
+                                                    width: '18px', height: '18px', borderRadius: '50%', background: '#fff',
+                                                    position: 'absolute', top: '3px',
+                                                    left: categoryFormData.hideAnalyses ? '23px' : '3px',
+                                                    transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                                                }} />
                                             </div>
-                                            <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                                                Registratorda alohida analizlar ko'rinmaydi
+                                            <div>
+                                                <div style={{ fontWeight: 600, color: '#111827', fontSize: '0.9rem' }}>
+                                                    {categoryFormData.hideAnalyses ? 'Yashirilgan' : "Ko'rinadi"}
+                                                </div>
+                                                <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '2px' }}>
+                                                    Registratorda alohida analizlar ko'rinmaydi
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Narx — faqat hideAnalyses yoqilganda */}
-                                <div className="form-group">
-                                    <label className="form-label" style={{ color: categoryFormData.hideAnalyses ? '#374151' : '#9ca3af' }}>
-                                        Kategoriya narxi (so'm)
-                                        {!categoryFormData.hideAnalyses && (
-                                            <span style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#f59e0b' }}>
-                                                — avval "Analizlarni yashirish"ni yoqing
-                                            </span>
-                                        )}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="form-input"
-                                        placeholder="0"
-                                        min="0"
-                                        step="1000"
-                                        value={categoryFormData.price}
-                                        disabled={!categoryFormData.hideAnalyses}
-                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, price: parseInt(e.target.value) || 0 })}
-                                        style={{
-                                            opacity: categoryFormData.hideAnalyses ? 1 : 0.5,
-                                            cursor: categoryFormData.hideAnalyses ? 'auto' : 'not-allowed',
-                                            background: categoryFormData.hideAnalyses ? '#fff' : '#f3f4f6'
-                                        }}
-                                    />
-                                </div>
+                                    {/* Narx */}
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ color: categoryFormData.hideAnalyses ? '#374151' : '#9ca3af' }}>
+                                            Kategoriya narxi (so'm)
+                                            {!categoryFormData.hideAnalyses && (
+                                                <span style={{ marginLeft: '8px', fontSize: '0.78rem', color: '#f59e0b' }}>
+                                                    — avval "Analizlarni yashirish"ni yoqing
+                                                </span>
+                                            )}
+                                        </label>
+                                        <input
+                                            type="number" className="form-input" placeholder="0" min="0" step="1000"
+                                            value={categoryFormData.price} disabled={!categoryFormData.hideAnalyses}
+                                            onChange={(e) => setCategoryFormData({ ...categoryFormData, price: parseInt(e.target.value) || 0 })}
+                                            style={{
+                                                color: '#111827',
+                                                background: categoryFormData.hideAnalyses ? '#fff' : '#f3f4f6',
+                                                opacity: categoryFormData.hideAnalyses ? 1 : 0.6,
+                                                cursor: categoryFormData.hideAnalyses ? 'auto' : 'not-allowed'
+                                            }}
+                                        />
+                                    </div>
 
-                                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                                    {editingCategory && (
-                                        <button type="button" className="btn btn-secondary" onClick={resetCategoryForm}>
-                                            Bekor qilish
-                                        </button>
+                                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                                        <button type="button" className="btn btn-secondary" onClick={resetCategoryForm}>Bekor qilish</button>
+                                        <button type="submit" className="btn btn-primary"><Save size={18} /> Saqlash</button>
+                                    </div>
+                                </form>
+
+                            ) : (
+                                /* ===== LIST + ADD MODE ===== */
+                                <>
+                                    {/* Category list table */}
+                                    {categories.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '32px 0', color: '#9ca3af' }}>
+                                            <Tag size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                                            <p style={{ color: '#9ca3af' }}>Hali kategoriya yo'q</p>
+                                        </div>
+                                    ) : (
+                                        <div style={{ marginBottom: '24px' }}>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+                                                Mavjud kategoriyalar — {categories.length} ta
+                                            </div>
+                                            <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden' }}>
+                                                {categories.map((cat, i) => (
+                                                    <div key={cat._id} style={{
+                                                        display: 'flex', alignItems: 'center', gap: '12px',
+                                                        padding: '12px 16px',
+                                                        background: i % 2 === 0 ? '#fff' : '#f9fafb',
+                                                        borderBottom: i < categories.length - 1 ? '1px solid #e5e7eb' : 'none'
+                                                    }}>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <div style={{ fontWeight: 600, color: '#111827', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                {cat.name}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                                                                {cat.code && <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{cat.code}</span>}
+                                                                {cat.hideAnalyses && (
+                                                                    <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#92400e', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                                                                        Yashirin
+                                                                    </span>
+                                                                )}
+                                                                {cat.price > 0 && cat.hideAnalyses && (
+                                                                    <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                                                                        {new Intl.NumberFormat('uz-UZ').format(cat.price)} so'm
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                                                            <button
+                                                                onClick={() => openCategoryModal(cat)}
+                                                                style={{ background: '#eff6ff', border: 'none', cursor: 'pointer', color: '#2563eb', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
+                                                                title="Tahrirlash"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteCategory(cat._id)}
+                                                                style={{ background: '#fef2f2', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
+                                                                title="O'chirish"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
-                                    <button type="submit" className="btn btn-primary">
-                                        {editingCategory ? (
-                                            <>
-                                                <Save size={18} />
-                                                Saqlash
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Plus size={18} />
-                                                Qo'shish
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
+
+                                    {/* Add new category form */}
+                                    <div style={{ borderTop: '2px dashed #e5e7eb', paddingTop: '20px' }}>
+                                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px' }}>
+                                            Yangi kategoriya qo'shish
+                                        </div>
+                                        <form onSubmit={handleCategorySubmit}>
+                                            {categoryError && <div className="alert error" style={{ marginBottom: '12px' }}>{categoryError}</div>}
+                                            {categorySuccess && <div className="alert success" style={{ marginBottom: '12px' }}><Check size={16} /> {categorySuccess}</div>}
+
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ color: '#374151' }}>Kategoriya nomi *</label>
+                                                <input type="text" className="form-input" style={{ color: '#111827', background: '#fff' }}
+                                                    placeholder="Masalan: Qon tahlili"
+                                                    value={categoryFormData.name}
+                                                    onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                                                    required />
+                                            </div>
+                                            <div className="form-row">
+                                                <div className="form-group">
+                                                    <label className="form-label" style={{ color: '#374151' }}>Kod</label>
+                                                    <input type="text" className="form-input" style={{ color: '#111827', background: '#fff' }}
+                                                        placeholder="BLOOD"
+                                                        value={categoryFormData.code}
+                                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, code: e.target.value })} />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label className="form-label" style={{ color: '#374151' }}>Tavsif</label>
+                                                    <input type="text" className="form-input" style={{ color: '#111827', background: '#fff' }}
+                                                        placeholder="Qisqa tavsif"
+                                                        value={categoryFormData.description}
+                                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, description: e.target.value })} />
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                                                <button type="submit" className="btn btn-primary"><Plus size={18} /> Qo'shish</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1158,6 +1213,12 @@ function DiagnosisManagement() {
                     gap: var(--space-md);
                     margin-top: var(--space-xl);
                 }
+                /* Category modal scrollbar */
+                .cat-modal-body::-webkit-scrollbar { width: 6px; }
+                .cat-modal-body::-webkit-scrollbar-track { background: #f9fafb; border-radius: 4px; }
+                .cat-modal-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+                .cat-modal-body::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
                 .btn-danger {
                     background: linear-gradient(135deg, #ef4444, #dc2626);
                     color: white;
