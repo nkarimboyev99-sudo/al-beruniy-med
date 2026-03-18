@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     UserPlus, Plus, Search, Edit2, Eye,
     Phone, Calendar, User, FileText,
-    Save, Check, X, Stethoscope, ClipboardList, Printer
+    Save, Check, X, Stethoscope, ClipboardList, Printer, AlertTriangle
 } from 'lucide-react'
 import '../admin/DataManagement.css'
 import '../admin/rfp.css'
@@ -16,6 +16,7 @@ function RegistratorPatients() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [dateFilter, setDateFilter] = useState('all')
+    const [statusFilter, setStatusFilter] = useState('all')
     const [currentPage, setCurrentPage] = useState(1)
 
     const [showModal, setShowModal] = useState(false)
@@ -318,7 +319,15 @@ function RegistratorPatients() {
             p.passportNumber?.toLowerCase().includes(searchTerm.toLowerCase())
         let matchesFilter = true
         if (dateFilter === 'today') matchesFilter = isActiveToday(p)
-        return matchesSearch && matchesFilter
+            
+        let matchesStatus = true
+        if (statusFilter === 'done') matchesStatus = p.allResultsSaved
+        else if (statusFilter === 'pending') {
+            matchesStatus = p.hasUnsavedResults || (!p.allResultsSaved && !p.hasUnsavedResults && p.diagnosisCount === 0)
+            // wait, if they don't have analysis, we treat them as pending or no-diagnosis? Usually pending if not done.
+        }
+
+        return matchesSearch && matchesFilter && matchesStatus
     })
 
     const todayCount = patients.filter(p => isActiveToday(p)).length
@@ -376,12 +385,19 @@ function RegistratorPatients() {
                             onChange={(e) => handleSearch(e.target.value)}
                         />
                     </div>
-                    <div className="pm-filters">
+                    <div className="pm-filters" style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
                         <button className={`pm-filter-btn ${dateFilter === 'all' ? 'active' : ''}`} onClick={() => handleDateFilter('all')}>
                             Barchasi
                         </button>
                         <button className={`pm-filter-btn ${dateFilter === 'today' ? 'active' : ''}`} onClick={() => handleDateFilter('today')}>
                             <Calendar size={14} /> Bugungi ({todayCount})
+                        </button>
+                        <div style={{width: '2px', height: '20px', background: '#e2e8f0', margin: '0 4px'}}></div>
+                        <button className={`pm-filter-btn ${statusFilter === 'done' ? 'active' : ''}`} style={statusFilter === 'done' ? {background: '#f0fdf4', borderColor: '#86efac', color: '#16a34a'} : {}} onClick={() => {setStatusFilter(statusFilter === 'done' ? 'all' : 'done'); setCurrentPage(1)}}>
+                            <Check size={14} /> Bajarilgan
+                        </button>
+                        <button className={`pm-filter-btn ${statusFilter === 'pending' ? 'active' : ''}`} style={statusFilter === 'pending' ? {background: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626'} : {}} onClick={() => {setStatusFilter(statusFilter === 'pending' ? 'all' : 'pending'); setCurrentPage(1)}}>
+                            <AlertTriangle size={14} /> Bajarilmagan
                         </button>
                     </div>
                 </div>
