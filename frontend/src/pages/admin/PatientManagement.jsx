@@ -543,7 +543,15 @@ function PatientManagement({ readOnly = false }) {
                     </div>
                     ${buildTableHTML(cols, rows, false)}
                     <div class="print-footer">
-                        <span class="doctor-label">Врач:</span> <span class="doctor-name">${doctorName}</span>
+                        <div class="pf-top">
+                            <span class="doctor-label">Анализ проводил(а) :</span>
+                            <span class="pf-line"></span>
+                            <span class="doctor-name">${doctorName}</span>
+                        </div>
+                        <div class="pf-disclaimer">
+                            Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
+                            Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
+                        </div>
                     </div>
                 </div>
             `
@@ -664,11 +672,29 @@ function PatientManagement({ readOnly = false }) {
         /* ── Footer ── */
         .print-footer {
             margin-top: 18px;
-            text-align: right;
             font-size: 10pt;
+        }
+        .pf-top {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        .pf-line {
+            flex: 1;
+            border-bottom: 1px solid #000;
+            margin: 0 10px;
+            max-width: 250px;
         }
         .print-footer .doctor-label { font-weight: 700; }
         .print-footer .doctor-name { font-weight: 700; }
+        .pf-disclaimer {
+            text-align: center;
+            border-top: 1px solid #aaa;
+            padding-top: 6px;
+            font-size: 8.5pt;
+            line-height: 1.4;
+        }
 
         @media print { body { padding: 0; } }
     `
@@ -828,7 +854,15 @@ function PatientManagement({ readOnly = false }) {
                             <b>Xulosa:</b>${diagnosis.results.conclusion}
                         </div>` : ''}
                     <div class="print-footer">
-                        <span class="doctor-label">Врач:</span> <span class="doctor-name">${doctorName}</span>
+                        <div class="pf-top">
+                            <span class="doctor-label">Анализ проводил(а) :</span>
+                            <span class="pf-line"></span>
+                            <span class="doctor-name">${doctorName}</span>
+                        </div>
+                        <div class="pf-disclaimer">
+                            Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
+                            Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
+                        </div>
                     </div>
                 </div>
             `
@@ -970,7 +1004,15 @@ function PatientManagement({ readOnly = false }) {
                 `
             }).filter(Boolean).join('')}
             <div class="print-footer">
-                <span class="doctor-label">Врач:</span> <span class="doctor-name">${doctorName}</span>
+                <div class="pf-top">
+                    <span class="doctor-label">Анализ проводил(а) :</span>
+                    <span class="pf-line"></span>
+                    <span class="doctor-name">${doctorName}</span>
+                </div>
+                <div class="pf-disclaimer">
+                    Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
+                    Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
+                </div>
             </div>
         </body></html>`)
         printWindow.document.close()
