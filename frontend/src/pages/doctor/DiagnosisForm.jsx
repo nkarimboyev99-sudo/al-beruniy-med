@@ -497,7 +497,16 @@ function DiagnosisForm() {
                                 <Layers size={15} />
                                 Kategoriyalar
                             </div>
-                            {categoriesList.map(cat => {
+                            {categoriesList
+                                .map((cat, index) => ({ cat, index }))
+                                .sort((a, b) => {
+                                    const aSelected = a.cat.hideAnalyses ? (a.cat._id in hiddenCatSelections) : getSelectedCountByCategory(a.cat._id) > 0;
+                                    const bSelected = b.cat.hideAnalyses ? (b.cat._id in hiddenCatSelections) : getSelectedCountByCategory(b.cat._id) > 0;
+                                    if (aSelected && !bSelected) return -1;
+                                    if (!aSelected && bSelected) return 1;
+                                    return a.index - b.index;
+                                })
+                                .map(({ cat }) => {
                                 const catDiagCount = getDiagnosesByCategory(cat._id).length
                                 const catSelectedCount = getSelectedCountByCategory(cat._id)
                                 const isHiddenSelected = cat._id in hiddenCatSelections
