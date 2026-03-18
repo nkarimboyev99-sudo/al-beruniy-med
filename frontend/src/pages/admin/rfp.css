@@ -1,0 +1,1574 @@
+/* Registrator view modal scrollbar */
+.rp-view-body::-webkit-scrollbar { width: 6px; }
+.rp-view-body::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.rp-view-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.rp-view-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Toast */
+.pm-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    animation: toast-in .25s ease;
+}
+.pm-toast.success { background: #52c41a; color: #fff; }
+.pm-toast.error   { background: #ef4444; color: #fff; }
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   RESULTS FULL PAGE  —  OQ TEMA
+   ══════════════════════════════════════ */
+
+.results-fullpage {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #f0f4f8;
+    display: flex;
+    flex-direction: column;
+    font-family: inherit;
+}
+
+/* ── Header ── */
+.rfp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    flex-shrink: 0;
+    gap: 16px;
+}
+
+.rfp-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all .15s;
+}
+.rfp-back-btn:hover {
+    color: #111827;
+    border-color: #9ca3af;
+    background: #f9fafb;
+}
+
+.rfp-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #111827;
+}
+.rfp-title h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+}
+.rfp-title span {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.rfp-header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.rfp-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+}
+.rfp-btn-save {
+    background: #16a34a;
+    color: #fff;
+}
+.rfp-btn-save:hover { background: #15803d; }
+.rfp-btn-print {
+    background: #2563eb;
+    color: #fff;
+}
+.rfp-btn-print:hover { background: #1d4ed8; }
+
+/* ── Body layout ── */
+.rfp-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── Sidebar ── */
+/* ══ SIDEBAR ══ */
+.rfp-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+}
+
+.rfp-sidebar-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #9ca3af;
+    font-weight: 700;
+    padding: 0 2px;
+    margin-bottom: 4px;
+}
+
+/* ── Sana guruhi sarlavhasi ── */
+.rfp-date-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 6px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+}
+.rfp-date-group.first {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+.rfp-date-group span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    white-space: nowrap;
+}
+.rfp-date-group::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+/* ── Analiz kartasi ── */
+.rfp-cat-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #374151;
+    font-size: 0.88rem;
+    text-align: left;
+    transition: all .15s;
+    width: 100%;
+}
+.rfp-cat-btn:hover {
+    border-color: #93c5fd;
+    background: #f0f7ff;
+    box-shadow: 0 2px 8px rgba(37,99,235,.07);
+}
+.rfp-cat-btn.active {
+    background: #eff6ff;
+    border-color: #2563eb;
+    box-shadow: 0 2px 10px rgba(37,99,235,.12);
+}
+
+/* Karta ichidagi asosiy qator */
+.rfp-cat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.rfp-cat-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.rfp-cat-btn.active .rfp-cat-num {
+    background: #2563eb;
+    color: #fff;
+}
+
+.rfp-cat-first-tag {
+    flex: 1;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rfp-cat-btn.active .rfp-cat-first-tag { color: #1d4ed8; }
+
+.rfp-cat-name-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+.rfp-cat-count {
+    font-size: 0.72rem;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.rfp-cat-right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+/* Yashil ptichka badge */
+.rfp-cat-check-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+/* Pastga strelka */
+.rfp-cat-expand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+.rfp-cat-expand:hover { background: #f3f4f6; color: #374151; }
+.rfp-cat-expand.open { transform: rotate(180deg); background: #dbeafe; border-color: #93c5fd; color: #2563eb; }
+.rfp-cat-btn.active .rfp-cat-expand { border-color: #bfdbfe; background: #ffffff; color: #2563eb; }
+.rfp-cat-btn.active .rfp-cat-expand.open { background: #dbeafe; }
+
+/* Yoyilgan teglar */
+.rfp-cat-extra-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 7px 0 2px 30px;
+    cursor: pointer;
+}
+
+.rfp-cat-tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    line-height: 1.5;
+}
+.rfp-cat-btn.active .rfp-cat-tag {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+/* Vaqt */
+.rfp-cat-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: #9ca3af;
+    padding: 4px 0 0 30px;
+    cursor: pointer;
+}
+.rfp-cat-btn.active .rfp-cat-date { color: #60a5fa; }
+
+/* ── Sana filtri ── */
+.rfp-date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-top: auto;
+}
+
+.rfp-date-filter-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #9ca3af;
+}
+
+.rfp-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.rfp-date-field label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.rfp-date-field input[type="date"] {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 0.82rem;
+    outline: none;
+    cursor: pointer;
+}
+.rfp-date-field input[type="date"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,.1);
+}
+
+.rfp-date-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+}
+.rfp-date-clear:hover { background: #fee2e2; }
+
+.rfp-cat-check { color: #16a34a; flex-shrink: 0; }
+
+.rfp-patient-info {
+    margin-top: auto;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.rfp-pi-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* ── Main ── */
+.rfp-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.rfp-table-area {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+}
+
+.rfp-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 2px solid #e2e8f0;
+    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+}
+
+.rfp-title-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111827;
+    flex: 1;
+    letter-spacing: -0.01em;
+}
+.rfp-title-input::placeholder { color: #9ca3af; }
+
+.rfp-add-col-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all .15s;
+}
+.rfp-add-col-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+
+/* ── Table ── */
+.rfp-table-wrap { overflow-x: auto; }
+
+.rfp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.rfp-table thead tr {
+    background: #f1f5f9;
+}
+
+.rfp-th-num,
+.rfp-th-del {
+    width: 52px;
+    text-align: center;
+    padding: 13px 8px;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 2px solid #2563eb;
+}
+
+.rfp-th-col {
+    padding: 10px 16px;
+    position: relative;
+    border-left: 1px solid #e2e8f0;
+    border-bottom: 2px solid #2563eb;
+    min-width: 160px;
+}
+
+.rfp-col-name-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 0.82rem;
+    font-weight: 700;
+    width: 100%;
+    color: #374151;
+    padding: 4px 24px 4px 4px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    cursor: text;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color .15s;
+}
+.rfp-col-name-input:hover {
+    border-bottom-color: #d1d5db;
+}
+.rfp-col-name-input:focus {
+    border-bottom-color: #2563eb;
+    color: #111827;
+}
+.rfp-col-name-input::placeholder {
+    color: #93c5fd;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.rfp-th-result .rfp-col-name-input {
+    color: #1d4ed8;
+}
+.rfp-th-result .rfp-col-name-input:focus {
+    color: #1e40af;
+}
+
+.rfp-col-name-text {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    display: block;
+    padding: 4px;
+}
+
+/* Natija ustuni header alohida rang */
+.rfp-th-col:nth-child(3) {
+    background: #eff6ff;
+    border-bottom-color: #2563eb;
+}
+.rfp-th-col:nth-child(3) .rfp-col-name-text,
+.rfp-th-col:nth-child(3) .rfp-col-name-input {
+    color: #1d4ed8;
+}
+
+.rfp-td-readonly {
+    padding: 0 16px;
+    vertical-align: middle;
+}
+
+.rfp-cell-text {
+    display: block;
+    font-size: 0.92rem;
+    color: #374151;
+    padding: 10px 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+/* Norma ustuni */
+.rfp-td-readonly:last-of-type .rfp-cell-text {
+    color: #059669;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.rfp-del-col {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fee2e2;
+    border: none;
+    border-radius: 3px;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 2px 4px;
+    opacity: 0;
+    transition: opacity .15s;
+}
+.rfp-th-col:hover .rfp-del-col { opacity: 1; }
+
+.rfp-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .12s;
+    min-height: 56px;
+}
+.rfp-table tbody tr:hover { background: #f8fafc; }
+.rfp-row-even { background: #fafbfd; }
+
+/* Kategoriya sarlavha qatori */
+.rfp-cat-header-row {
+    background: #e8f0fe !important;
+}
+.rfp-cat-header-cell {
+    padding: 7px 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1d4ed8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-top: 2px solid #bfdbfe;
+    border-bottom: 1px solid #bfdbfe;
+}
+.rfp-table tbody tr:last-child { border-bottom: none; }
+
+.rfp-td-num {
+    text-align: center;
+    padding: 0 8px;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-right: 1px solid #f1f5f9;
+    width: 52px;
+}
+
+/* Oddiy tahrirlash mumkin bo'lgan TD */
+.rfp-td-editable {
+    padding: 0;
+    vertical-align: middle;
+}
+.rfp-td-editable .rfp-cell-input {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.95rem;
+}
+.rfp-td-editable .rfp-cell-input:focus {
+    background: #f8fafc;
+}
+
+/* Natija TD — asosiy kiritish maydoni */
+.rfp-td-result {
+    background: #f0f9ff;
+    border-left: 2px solid #bfdbfe;
+    border-right: 2px solid #bfdbfe;
+    min-width: 180px;
+}
+.rfp-table tbody tr:hover .rfp-td-result { background: #e0f2fe; }
+
+.rfp-td-del {
+    text-align: center;
+    width: 52px;
+    border-left: 1px solid #f1f5f9;
+}
+
+.rfp-del-row {
+    background: transparent;
+    border: none;
+    color: #fca5a5;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.rfp-del-row:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.rfp-cell-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 14px 16px;
+    font-size: 1rem;
+    color: #111827;
+    font-family: inherit;
+    min-height: 52px;
+}
+.rfp-cell-input:focus {
+    background: #dbeafe;
+}
+.rfp-cell-input::placeholder { color: #93c5fd; font-size: 0.88rem; }
+
+.rfp-td-result .rfp-cell-input {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #1d4ed8;
+    letter-spacing: -0.01em;
+}
+
+/* ── Add row ── */
+.rfp-add-row-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 24px;
+    background: transparent;
+    border: none;
+    border-top: 1.5px dashed #cbd5e1;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all .15s;
+}
+.rfp-add-row-btn:hover {
+    color: #2563eb;
+    background: #f0f7ff;
+}
+
+/* ── Xulosa ── */
+.rfp-conclusion {
+    padding: 20px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #fafafa;
+}
+.rfp-conclusion label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.rfp-conclusion textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #111827;
+    font-size: 0.95rem;
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+    min-height: 80px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.rfp-conclusion textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    background: #fefeff;
+}
+
+/* ── Navigation ── */
+.rfp-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 0.88rem;
+    color: #6b7280;
+}
+.rfp-nav-counter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    font-weight: 500;
+}
+.rfp-nav-counter strong {
+    color: #374151;
+    font-weight: 700;
+}
+.rfp-nav-btns {
+    display: flex;
+    gap: 8px;
+}
+.rfp-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1.5px solid #d1d5db;
+    color: #374151;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all .15s;
+}
+.rfp-nav-btn:hover:not(:disabled) {
+    color: #2563eb;
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+.rfp-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ══════════════════════════════════════
+   PATIENT MANAGEMENT PAGE  —  OQ TEMA
+   ══════════════════════════════════════ */
+
+.pm-page {
+    padding: 24px;
+    background: #f0f4f8;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+/* ── Header ── */
+.pm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.pm-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.pm-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.pm-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.pm-subtitle {
+    font-size: 0.82rem;
+    color: #6b7280;
+    margin: 2px 0 0;
+}
+
+.pm-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+}
+.pm-add-btn:hover { background: #1d4ed8; }
+
+/* ── Stats ── */
+.pm-stats {
+    display: flex;
+    gap: 14px;
+}
+
+.pm-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    flex: 1;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+
+.pm-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pm-stat-blue .pm-stat-icon { background: #eff6ff; color: #2563eb; }
+.pm-stat-green .pm-stat-icon { background: #f0fdf4; color: #16a34a; }
+
+.pm-stat-num {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.1;
+}
+
+.pm-stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* ── Toolbar ── */
+.pm-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+
+.pm-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.pm-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 300px;
+}
+
+.pm-search-icon {
+    position: absolute;
+    left: 10px;
+    color: #9ca3af;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+.pm-search-input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #111827;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+.pm-search-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    background: #ffffff;
+}
+.pm-search-input::placeholder { color: #9ca3af; }
+
+.pm-filters {
+    display: flex;
+    gap: 6px;
+}
+
+.pm-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #6b7280;
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+}
+.pm-filter-btn:hover { background: #f1f5f9; color: #111827; }
+.pm-filter-btn.active {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+    font-weight: 600;
+}
+.pm-filter-btn--pending:hover { background: #fff7ed; color: #c2410c; }
+.pm-filter-btn--pending.active {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+    font-weight: 600;
+}
+.pm-filter-btn--completed:hover { background: #f0fdf4; color: #15803d; }
+.pm-filter-btn--completed.active {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+    font-weight: 600;
+}
+
+.pm-toolbar-info {
+    font-size: 0.84rem;
+    color: #6b7280;
+    white-space: nowrap;
+}
+.pm-toolbar-info strong { color: #111827; }
+
+/* ── Table ── */
+.pm-table-wrap {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+
+.pm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.pm-table thead tr {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.pm-table th {
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #9ca3af;
+}
+
+.pm-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.pm-table tbody tr:last-child td { border-bottom: none; }
+
+.pm-table tbody tr:hover td { background: #f8fafc; }
+
+.pm-today-row td {
+    background: #f0fdf4 !important;
+    border-left: 3px solid #16a34a;
+}
+.pm-today-row:hover td { background: #dcfce7 !important; }
+
+.pm-td-num {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    width: 40px;
+}
+
+.pm-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pm-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.88rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.pm-user-name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.pm-phone-cell {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #6b7280;
+}
+.pm-phone-cell svg { color: #9ca3af; }
+
+.pm-gender {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.pm-gender.male  { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.pm-gender.female { background: #fdf2f8; color: #9333ea; border: 1px solid #e9d5ff; }
+
+/* ── Action buttons ── */
+.pm-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.pm-act-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+.pm-act-btn:hover { transform: translateY(-1px); }
+
+.pm-act-view:hover  { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+.pm-act-list:hover  { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
+.pm-act-edit:hover  { background: #fffbeb; border-color: #fde68a; color: #d97706; }
+.pm-act-del:hover   { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+
+/* ── Pagination ── */
+.pm-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.pm-page-info {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.pm-page-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pm-page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pm-page-btn:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+}
+.pm-page-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+}
+.pm-page-btn:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+.pm-page-dots {
+    font-size: 0.88rem;
+    color: #9ca3af;
+    padding: 0 4px;
+}
+
+/* ── Empty / Loading state ── */
+.pm-state-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    color: #9ca3af;
+    gap: 10px;
+}
+
+.pm-state-icon { color: #d1d5db; }
+
+.pm-state-box h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.pm-state-box p {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.pm-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════
+   PATIENT EDIT MODAL  —  OQ TEMA
+   ══════════════════════════════════════ */
+
+.pe-modal {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,.12) !important;
+    border-radius: 16px !important;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    margin: 16px;
+    animation: slideIn 0.3s ease;
+}
+
+.pe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.pe-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pe-title-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.pe-title h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.pe-close {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    transition: all .15s;
+}
+.pe-close:hover { background: #f3f4f6; color: #374151; }
+
+.pe-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.pe-alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pe-alert.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.pe-alert.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+.pe-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.pe-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.pe-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.pe-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.pe-input::placeholder { color: #9ca3af; }
+
+select.pe-input {
+    cursor: pointer;
+    background: #ffffff;
+    color: #111827;
+}
+select.pe-input option {
+    background: #ffffff;
+    color: #111827;
+}
+
+textarea.pe-input {
+    resize: vertical;
+    min-height: 72px;
+}
+
+.pe-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.pe-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pe-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+}
+.pe-btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+.pe-btn-cancel:hover { background: #e5e7eb; }
+.pe-btn-save {
+    background: #2563eb;
+    color: #ffffff;
+}
+.pe-btn-save:hover { background: #1d4ed8; }
+
+/* autocomplete wrapper ichidagi pe-input */
+.pe-autocomplete { position: relative; }
+.pe-autocomplete .pe-input { width: 100%; }
+.pe-autocomplete .autocomplete-loading {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.pe-autocomplete .autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+    z-index: 9999;
+    overflow: hidden;
+}
+.pe-autocomplete .autocomplete-header {
+    padding: 8px 14px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #9ca3af;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f8fafc;
+}
+.pe-autocomplete .autocomplete-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background .1s;
+    border-bottom: 1px solid #f3f4f6;
+}
+.pe-autocomplete .autocomplete-item:last-child { border-bottom: none; }
+.pe-autocomplete .autocomplete-item:hover { background: #f0f7ff; }
+.pe-autocomplete .autocomplete-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+}
+.pe-autocomplete .autocomplete-item-info {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* ══════════════════════════════════════
+   DELETE CONFIRM MODAL  —  OQ TEMA
+   ══════════════════════════════════════ */
+
+.pd-modal {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,.12) !important;
+    border-radius: 16px !important;
+    width: 100%;
+    max-width: 400px;
+    margin: 16px;
+    animation: slideIn 0.3s ease;
+    overflow: hidden;
+}
+
+.pd-body {
+    padding: 32px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.pd-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    flex-shrink: 0;
+}
+
+.pd-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.pd-desc {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.pd-desc strong {
+    color: #111827;
+}
+
+.pd-warning {
+    font-size: 0.8rem;
+    color: #ef4444;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 7px 14px;
+    width: 100%;
+}
+
+.pd-footer {
+    display: flex;
+    gap: 10px;
+    padding: 0 28px 24px;
+}
+
+.pd-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+}
+.pd-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.pd-btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+.pd-btn-cancel:hover:not(:disabled) { background: #e5e7eb; }
+
+.pd-btn-delete {
+    background: #dc2626;
+    color: #ffffff;
+}
+.pd-btn-delete:hover:not(:disabled) { background: #b91c1c; }
