@@ -504,7 +504,7 @@ function DiagnosisForm() {
                                 return (
                                     <div
                                         key={cat._id}
-                                        className={`df-cat-item ${activeCategory === cat._id ? 'active' : ''}`}
+                                        className={`df-cat-item ${activeCategory === cat._id ? 'active' : ''} ${(cat.hideAnalyses ? isHiddenSelected : catSelectedCount > 0) ? 'selected' : ''}`}
                                         onClick={() => {
                                             setActiveCategory(cat._id)
                                             if (cat.hideAnalyses) toggleHiddenCategory(cat)

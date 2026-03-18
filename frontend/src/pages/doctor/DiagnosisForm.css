@@ -256,6 +256,17 @@
     background: #eff6ff;
     border-color: #2563eb;
 }
+.df-cat-item.selected {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+.df-cat-item.selected:hover {
+    background: #dcfce7;
+}
+.df-cat-item.active.selected {
+    background: #eff6ff;
+    border-color: #2563eb;
+}
 
 .df-cat-item-info {
     display: flex;
