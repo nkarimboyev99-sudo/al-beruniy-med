@@ -438,9 +438,18 @@ function RegistratorPatients() {
                                 <tr key={patient._id} className={isToday(patient.createdAt || patient.registeredAt) ? 'pm-today-row' : ''}>
                                     <td className="pm-td-num">{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                                     <td>
-                                        <div className="pm-user-cell">
-                                            <div className="pm-avatar">{patient.fullName?.charAt(0) || 'B'}</div>
-                                            <span className="pm-user-name">{patient.fullName}</span>
+                                        <div className="pm-user-cell" style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px'}}>
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                                <div className="pm-avatar" style={{width: 32, height: 32, fontSize: '0.9rem'}}>{patient.fullName?.charAt(0) || 'B'}</div>
+                                                <span className="pm-user-name" style={{lineHeight: 1}}>{patient.fullName}</span>
+                                            </div>
+                                            <div style={{marginLeft: '42px'}}>
+                                                {patient.allResultsSaved && patient.diagnosisCount > 0 ? (
+                                                    <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: '#dcfce7', color: '#16a34a', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>Bajarilgan</span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: '#fee2e2', color: '#dc2626', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>Bajarilmagan</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                     <td>
