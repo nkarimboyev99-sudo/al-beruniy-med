@@ -56,22 +56,65 @@ function DiagnosisForm() {
             if (patRes.ok) setPatient(await patRes.json())
             let diagListData = []
             if (diagRes.ok) { diagListData = await diagRes.json(); setDiagnosesList(diagListData) }
+            let catsData = []
             if (catRes.ok) {
-                const cats = await catRes.json()
-                setCategoriesList(cats)
-                if (cats.length > 0) setActiveCategory(cats[0]._id)
+                catsData = await catRes.json()
+                setCategoriesList(catsData)
+                if (catsData.length > 0) setActiveCategory(catsData[0]._id)
             }
             // Edit rejimi: mavjud diagnozni pre-fill qilish
             if (editRes && editRes.ok) {
                 const existing = await editRes.json()
-                const names = (existing.diagnosisName || '').split(',').map(s => s.trim()).filter(Boolean)
-                const preSelected = names.map(name => {
-                    const found = diagListData.find(d => d.name === name)
-                    const price = existing.diagnosisPrices?.find(p => p.name === name)?.price
-                        || found?.price || 0
-                    return { diagnosisId: found?._id || name, diagnosisName: name, price }
-                })
+                let preSelected = []
+                let hCats = {}
+                
+                if (existing.diagnosisPrices && existing.diagnosisPrices.length > 0 && existing.diagnosisPrices.some(dp => dp.diagnosisId)) {
+                    // Yangi format (diagnosisId va isCategoryPrice mavjud)
+                    existing.diagnosisPrices.forEach(dp => {
+                        if (dp.isCategoryPrice) {
+                            hCats[dp.diagnosisId] = dp.price || 0
+                        } else {
+                            preSelected.push({
+                                diagnosisId: dp.diagnosisId,
+                                diagnosisName: dp.name,
+                                price: dp.price || 0
+                            })
+                        }
+                    })
+                } else if (existing.diagnosisPrices && existing.diagnosisPrices.length > 0) {
+                    // Eski format: Faqat name va price bor
+                    existing.diagnosisPrices.forEach(dp => {
+                        const matchedDiag = diagListData.find(d => d.name === dp.name)
+                        if (matchedDiag) {
+                            preSelected.push({
+                                diagnosisId: matchedDiag._id,
+                                diagnosisName: matchedDiag.name,
+                                price: dp.price || matchedDiag.price || 0
+                            })
+                        } else {
+                            const matchedCat = catsData.find(c => c.name === dp.name)
+                            if (matchedCat) {
+                                hCats[matchedCat._id] = dp.price || 0
+                            }
+                        }
+                    })
+                } else {
+                    // Eng eski format: faqat diagnosisName (string)
+                    const names = (existing.diagnosisName || '').split(',').map(s => s.trim()).filter(Boolean)
+                    names.forEach(name => {
+                        const matchedDiag = diagListData.find(d => d.name === name)
+                        if (matchedDiag) {
+                            preSelected.push({
+                                diagnosisId: matchedDiag._id,
+                                diagnosisName: matchedDiag.name,
+                                price: matchedDiag.price || 0
+                            })
+                        }
+                    })
+                }
+                
                 setFormData({ diagnoses: preSelected, notes: existing.notes || '' })
+                setHiddenCatSelections(hCats)
                 setPaymentData({
                     discount: existing.discount || 0,
                     paymentMethod: existing.paymentMethod || 'cash'

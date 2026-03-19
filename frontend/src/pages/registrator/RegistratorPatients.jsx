@@ -925,16 +925,18 @@ function RegistratorPatients() {
                                                                 >
                                                                     <Printer size={14} />
                                                                 </button>
-                                                                <button
-                                                                    className="pm-act-btn pm-act-edit"
-                                                                    title="Tahrirlash"
-                                                                    onClick={() => {
-                                                                        setShowViewModal(false)
-                                                                        navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
-                                                                    }}
-                                                                >
-                                                                    <Edit2 size={14} />
-                                                                </button>
+                                                                {!d.results?.savedAt && (
+                                                                    <button
+                                                                        className="pm-act-btn pm-act-edit"
+                                                                        title="Tahrirlash"
+                                                                        onClick={() => {
+                                                                            setShowViewModal(false)
+                                                                            navigate(`/registrator/patients/diagnosis/${selectedPatient._id}?edit=${d._id}`)
+                                                                        }}
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>

@@ -37,6 +37,14 @@ const patientDiagnosisSchema = new mongoose.Schema({
     }],
     // To'lov ma'lumotlari (chekni qayta chiqarish uchun)
     diagnosisPrices: [{
+        diagnosisId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Diagnosis' // could also point to Category if isCategoryPrice=true, but loose ref is fine
+        },
+        isCategoryPrice: {
+            type: Boolean,
+            default: false
+        },
         name: String,
         price: Number
     }],
