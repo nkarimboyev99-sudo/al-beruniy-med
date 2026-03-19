@@ -895,21 +895,23 @@ function RegistratorPatients() {
                                                         border: '1px solid #e2e8f0',
                                                         borderLeft: '3px solid #3b82f6'
                                                     }}>
-                                                        {/* Kategoriyalar ro'yxati */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '8px' }}>
-                                                            {catGroups.map(({ cat, tests }) => (
-                                                                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                    <span style={{
-                                                                        fontSize: '0.83rem', fontWeight: 600,
-                                                                        color: '#1e293b'
-                                                                    }}>{cat}</span>
-                                                                    <span style={{
-                                                                        fontSize: '0.75rem', color: '#fff',
-                                                                        background: '#3b82f6', borderRadius: '20px',
-                                                                        padding: '1px 7px', fontWeight: 500
-                                                                    }}>{tests.length} ta</span>
-                                                                </div>
-                                                            ))}
+                                                        {/* Sotib olingan paket/analizlar ro'yxati (chek bilan bir xil) */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
+                                                            {d.diagnosisPrices && d.diagnosisPrices.length > 0 ? (
+                                                                d.diagnosisPrices.map((dp, i) => (
+                                                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', padding: '2px 0' }}>
+                                                                        <span style={{ fontWeight: 500, color: '#1e293b' }}>{dp.name}</span>
+                                                                        <span style={{ color: '#64748b', fontWeight: 600 }}>{dp.price > 0 ? dp.price.toLocaleString() : '0'}</span>
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                catGroups.map(({ cat, tests }) => (
+                                                                    <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                        <span style={{ fontSize: '0.83rem', fontWeight: 600, color: '#1e293b' }}>{cat}</span>
+                                                                        <span style={{ fontSize: '0.75rem', color: '#fff', background: '#3b82f6', borderRadius: '20px', padding: '1px 7px', fontWeight: 500 }}>{tests.length} ta</span>
+                                                                    </div>
+                                                                ))
+                                                            )}
                                                         </div>
                                                         {/* Meta + tugmalar */}
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
