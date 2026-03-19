@@ -129,6 +129,158 @@ function RegistratorPatients() {
         setTimeout(() => { win.print(); win.close() }, 800)
     }
 
+    const printLabResult = (diagnosis, patient) => {
+        if (!diagnosis.results || !diagnosis.results.rows || diagnosis.results.rows.length === 0) {
+            alert('Bu analiz uchun hali natijalar kiritilmagan!')
+            return
+        }
+
+        const now = new Date()
+        const doctorName = diagnosis.doctor?.fullName || diagnosis.doctorName || diagnosis.results.savedBy?.fullName || ''
+        const cols = diagnosis.results.columns || [
+            { id: 'col_1', name: 'Название' }, { id: 'col_2', name: 'Результат' }, { id: 'col_3', name: 'Норма' }, { id: 'col_4', name: 'Ед.' }
+        ]
+        const idName = cols[0]?.id || 'col_1'
+        const logoUrl = `${window.location.origin}/logo.png`
+        
+        const groupMap = {}
+        const groupOrder = []
+        const filteredRows = diagnosis.results.rows.filter(r => Object.values(r.values || {}).some(v => v && v.toString().trim()))
+
+        filteredRows.forEach(row => {
+            const testName = row.values?.[idName] || ''
+            const match = diagnosesList.find(d => d.name === testName)
+            const catName = match?.category?.name || diagnosis.results?.title || diagnosis.diagnosis?.category?.name || 'Laboratoriya tahlili'
+            if (!groupMap[catName]) {
+                groupMap[catName] = { rows: [], cols }
+                groupOrder.push(catName)
+            }
+            groupMap[catName].rows.push(row)
+        })
+
+        if (groupOrder.length === 0) { alert('Natijalar topilmadi!'); return }
+
+        const fmtDt = (d) => d ? `${new Date(d).toLocaleDateString('ru-RU')} ${new Date(d).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}` : '-'
+        const buildPatientBlock = () => `
+            <div class="print-patient">
+                <div><span><b>Ф.И.О.:</b> ${patient.fullName}</span></div>
+                <div><span><b>Дата рожд.:</b> ${patient.birthDate ? new Date(patient.birthDate).toLocaleDateString('ru-RU') : '-'}</span></div>
+                <div><span><b>Пол:</b> ${patient.gender === 'male' ? 'Мужской' : 'Женский'}</span></div>
+                <div><span><b>Врач:</b> ${patient.referredBy || '-'}</span></div>
+                <div><span><b>Дата сдачи:</b> ${fmtDt(diagnosis.createdAt)}</span></div>
+                <div><span><b>Штрих код:</b> ${(patient._id || '').slice(-8)}</span></div>
+            </div>
+        `
+
+        const pages = groupOrder.map((catName, pageIdx) => {
+            const { rows, cols: pageCols } = groupMap[catName]
+            const isLast = pageIdx === groupOrder.length - 1
+            let conclusionHtml = ''
+            if (isLast && diagnosis.results.conclusion) {
+                conclusionHtml = `<div class="print-conclusion"><b>Xulosa:</b>${diagnosis.results.conclusion}</div>`
+            }
+
+            return `
+                <div class="print-page${isLast ? '' : ' page-break'}">
+                    <div class="print-header">
+                        <img src="${logoUrl}" alt="Logo" class="ph-logo"/>
+                        <div class="ph-clinic">
+                            <div class="ph-clinic-name">AL-BERUNIY<span>MED</span></div>
+                            <div class="ph-clinic-sub">Тиббий диагностика маркази</div>
+                        </div>
+                    </div>
+                    ${buildPatientBlock()}
+                    <div class="print-title-row">
+                        <div class="print-title">${catName}</div>
+                    </div>
+                    <table class="results-table">
+                        <thead><tr>${pageCols.map(c => `<th style="width:${c.width}">${c.name}</th>`).join('')}</tr></thead>
+                        <tbody>
+                            ${rows.map(r => `
+                                <tr class="${r.values.isAbnormal ? 'out-of-range' : ''}">
+                                    ${pageCols.map((c, i) => `<td class="${i===1 ? 'result-val' : ''}">${r.values[c.id] || ''}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    ${conclusionHtml}
+                    <div class="print-footer">
+                        <div class="pf-top">
+                            <span class="doctor-label">Анализ проводил(а) :</span>
+                            <span class="pf-line"></span>
+                            <span class="doctor-name">${doctorName}</span>
+                        </div>
+                        <div class="pf-disclaimer">
+                            Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
+                            Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
+                        </div>
+                    </div>
+                </div>
+            `
+        }).join('')
+
+        const printWindow = window.open('', '_blank')
+        if (!printWindow) { alert('Popup bloklandi! Ruxsat bering.'); return }
+        printWindow.document.write(`<!DOCTYPE html><html><head>
+            <meta charset="utf-8"/>
+            <title>${patient.fullName} — natijalar</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                @page { size: A4; margin: 12mm 15mm; }
+                body { font-family: Arial, sans-serif; font-size: 10pt; color: #111; background: #fff; }
+                .print-header { display: flex; align-items: center; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid #555; margin-bottom: 12px; }
+                .ph-logo { width: 72px; height: 72px; object-fit: contain; }
+                .ph-clinic-name { font-size: 22pt; font-weight: 900; line-height: 1.1; color: #111; }
+                .ph-clinic-name span { color: #d63031; }
+                .ph-clinic-sub { font-size: 9pt; color: #555; margin-top: 2px; }
+                .print-patient { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 20px; margin-bottom: 14px; font-size: 10pt; }
+                .print-patient span { display: block; }
+                .print-patient b { font-weight: 600; }
+                .print-title-row { display: flex; align-items: baseline; justify-content: center; margin-bottom: 4px; position: relative; }
+                .print-title { font-size: 10pt; font-weight: 700; text-align: center; }
+                .print-title-date { position: absolute; right: 0; font-size: 8.5pt; color: #555; }
+                .results-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 10px; font-size: 9.5pt; }
+                .results-table th { border: 1px solid #333; padding: 5px 7px; background: #f0f0f0; font-weight: 700; text-align: left; word-wrap: break-word; }
+                .results-table td { border: 1px solid #aaa; padding: 4px 7px; text-align: left; word-wrap: break-word; }
+                .results-table td.result-val { font-weight: 700; }
+                .results-table tr.out-of-range td { background: #ffe0e0; }
+                .print-conclusion { margin: 10px 0; padding: 8px 12px; border-left: 3px solid #555; font-size: 9.5pt; color: #222; }
+                .print-conclusion b { display: block; margin-bottom: 4px; }
+                .print-footer { margin-top: 18px; font-size: 10pt; }
+                .pf-top { display: flex; align-items: flex-end; justify-content: center; margin-bottom: 8px; }
+                .pf-line { flex: 1; border-bottom: 1px solid #000; margin: 0 10px; max-width: 250px; }
+                .print-footer .doctor-label { font-weight: 700; }
+                .print-footer .doctor-name { font-weight: 700; }
+                .pf-disclaimer { text-align: center; border-top: 1px solid #aaa; padding-top: 6px; font-size: 8.5pt; line-height: 1.4; }
+                .print-page { width: 100%; }
+                .page-break { page-break-after: always; }
+                @media print { body { padding: 0; } }
+            </style>
+        </head><body>${pages}</body></html>`)
+        printWindow.document.close()
+        printWindow.focus()
+        setTimeout(() => { printWindow.print(); printWindow.close() }, 500)
+    }
+
+    const handlePrintLastResult = async (patient) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/patient-diagnoses/patient/${patient._id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+            if (res.ok) {
+                const diagnoses = await res.json()
+                const savedDiags = diagnoses.filter(d => d.results?.savedAt).sort((a, b) => new Date(b.results.savedAt) - new Date(a.results.savedAt))
+                if (savedDiags.length === 0) {
+                    alert("Bu bemorda tayyor natijalar yo'q!")
+                    return
+                }
+                printLabResult(savedDiags[0], patient)
+            }
+        } catch (e) {
+            console.error(e)
+            alert("Natijani yuklashda xatolik!")
+        }
+    }
+
     // Test nomidan kategoriya nomini olish
     const getCategoryForTest = (testName) => {
         const match = diagnosesList.find(d => d.name === testName)
@@ -472,6 +624,11 @@ function RegistratorPatients() {
                                             <button className="pm-act-btn pm-act-edit" title="Tahrirlash" onClick={() => handleEdit(patient)}>
                                                 <Edit2 size={15} />
                                             </button>
+                                            {patient.allResultsSaved === true && (
+                                                <button className="pm-act-btn pm-act-view" title="Oxirgi natijani chop etish" style={{ color: '#2563eb', background: '#eff6ff', borderColor: '#bfdbfe' }} onClick={() => handlePrintLastResult(patient)}>
+                                                    <Printer size={15} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
