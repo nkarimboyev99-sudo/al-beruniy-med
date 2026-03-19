@@ -321,10 +321,9 @@ function RegistratorPatients() {
         if (dateFilter === 'today') matchesFilter = isActiveToday(p)
             
         let matchesStatus = true
-        if (statusFilter === 'done') matchesStatus = p.allResultsSaved
+        if (statusFilter === 'done') matchesStatus = p.allResultsSaved === true
         else if (statusFilter === 'pending') {
-            matchesStatus = p.hasUnsavedResults || (!p.allResultsSaved && !p.hasUnsavedResults && p.diagnosisCount === 0)
-            // wait, if they don't have analysis, we treat them as pending or no-diagnosis? Usually pending if not done.
+            matchesStatus = p.hasUnsavedResults === true
         }
 
         return matchesSearch && matchesFilter && matchesStatus
@@ -444,11 +443,11 @@ function RegistratorPatients() {
                                                 <span className="pm-user-name" style={{lineHeight: 1}}>{patient.fullName}</span>
                                             </div>
                                             <div style={{marginLeft: '42px'}}>
-                                                {patient.allResultsSaved && patient.diagnosisCount > 0 ? (
+                                                {patient.allResultsSaved === true ? (
                                                     <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: '#dcfce7', color: '#16a34a', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>Bajarilgan</span>
-                                                ) : (
+                                                ) : patient.hasUnsavedResults === true ? (
                                                     <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: '#fee2e2', color: '#dc2626', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>Bajarilmagan</span>
-                                                )}
+                                                ) : null}
                                             </div>
                                         </div>
                                     </td>
