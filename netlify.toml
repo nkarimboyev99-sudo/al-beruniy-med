@@ -1,0 +1,22 @@
+# Netlify Build Settings
+[build]
+  base = "frontend"
+  publish = "dist"
+  command = "npm run build"
+
+# Environment variables
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirects for SPA (React Router)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
