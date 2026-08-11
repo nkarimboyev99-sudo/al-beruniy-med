@@ -59,6 +59,7 @@ function PatientManagement({ readOnly = false }) {
     const [medicinesList, setMedicinesList] = useState([])
     const [inventory, setInventory] = useState([])
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
     const [showModal, setShowModal] = useState(false)
     const [showViewModal, setShowViewModal] = useState(false)
     const [showDiagnosisModal, setShowDiagnosisModal] = useState(false)
@@ -172,17 +173,22 @@ function PatientManagement({ readOnly = false }) {
 
     const fetchPatients = async () => {
         try {
+            setLoading(true)
+            setLoadError('')
             const token = localStorage.getItem('token')
             const response = await fetch('/api/patients', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
-            if (response.ok) {
-                const data = await response.json()
-                setPatients(data)
+            if (!response.ok) {
+                throw new Error(`Bemorlarni yuklashda xatolik: ${response.status}`)
             }
+
+            const data = await response.json()
+            setPatients(Array.isArray(data) ? data : [])
         } catch (error) {
             console.error('Error fetching patients:', error)
+            setLoadError("Bemorlar ro'yxatini yuklab bo'lmadi. Server yoki ma'lumotlar bazasi bilan aloqa yo'q.")
         } finally {
             setLoading(false)
         }
@@ -3514,6 +3520,15 @@ function PatientManagement({ readOnly = false }) {
                     <div className="pm-state-box">
                         <div className="pm-spinner"></div>
                         <p>Yuklanmoqda...</p>
+                    </div>
+                ) : loadError ? (
+                    <div className="pm-state-box">
+                        <AlertTriangle size={44} className="pm-state-icon" />
+                        <h3>Ma'lumot yuklanmadi</h3>
+                        <p>{loadError}</p>
+                        <button className="pm-add-btn" type="button" onClick={fetchPatients}>
+                            Qayta yuklash
+                        </button>
                     </div>
                 ) : filteredPatients.length === 0 ? (
                     <div className="pm-state-box">

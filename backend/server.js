@@ -108,7 +108,14 @@ app.use('/api/referring-doctors', referringDoctorRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Al Beruniy Med API is running' });
+    const dbStates = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    const dbState = dbStates[mongoose.connection.readyState] || 'unknown';
+
+    res.status(dbState === 'connected' ? 200 : 503).json({
+        status: dbState === 'connected' ? 'OK' : 'DEGRADED',
+        message: 'Al Beruniy Med API is running',
+        database: dbState
+    });
 });
 
 // 404 handler

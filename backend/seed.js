@@ -10,6 +10,14 @@ const Transaction = require('./models/Transaction');
 
 const seedData = async () => {
     try {
+        if (process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+            console.error(
+                '❌ Seed bekor qilindi: bu script mavjud bemorlar va boshqa maʼlumotlarni o‘chiradi. ' +
+                'Agar buni ataylab qilmoqchi bo‘lsangiz, ALLOW_DESTRUCTIVE_SEED=true bilan qayta ishga tushiring.'
+            );
+            process.exit(1);
+        }
+
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('✅ MongoDB connected');
 
