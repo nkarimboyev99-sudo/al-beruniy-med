@@ -63,12 +63,14 @@ function Login() {
                     {error && <div className="error-message">{error}</div>}
 
                     <div className="form-group">
-                        <label className="form-label">Foydalanuvchi nomi</label>
+                        <label htmlFor="login-username" className="form-label">Foydalanuvchi nomi</label>
                         <div className="input-icon-wrapper">
                             <User className="input-icon" size={18} />
                             <input
+                                id="login-username"
                                 type="text"
                                 name="username"
+                                autoComplete="username"
                                 className="form-input"
                                 placeholder="Login kiriting"
                                 value={formData.username}
@@ -79,12 +81,14 @@ function Login() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Parol</label>
+                        <label htmlFor="login-password" className="form-label">Parol</label>
                         <div className="input-icon-wrapper">
                             <Lock className="input-icon" size={18} />
                             <input
+                                id="login-password"
                                 type={showPassword ? 'text' : 'password'}
                                 name="password"
+                                autoComplete="current-password"
                                 className="form-input"
                                 placeholder="Parolni kiriting"
                                 value={formData.password}
