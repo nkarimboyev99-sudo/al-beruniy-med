@@ -87,11 +87,17 @@ app.use((err, req, res, next) => {
     });
 });
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000
+})
     .then(async () => {
         console.log('✅ MongoDB connected successfully');
-        const User = require('./models/User');
-        await User.createDefaultAdmin();
+        try {
+            const User = require('./models/User');
+            await User.createDefaultAdmin();
+        } catch (e) {
+            console.error('Error creating default admin:', e);
+        }
     })
     .catch(err => {
         console.error('❌ MongoDB connection error:', err.message);
