@@ -22,30 +22,70 @@ const {
 const app = express();
 
 // CORS Configuration
-const allowedOrigins = [
+const allowedOrigins = new Set([
     'https://al-beruniy-med.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5000'
-];
+]);
+
+if (process.env.CLIENT_URL) {
+    process.env.CLIENT_URL
+        .split(',')
+        .map(origin => origin.trim())
+        .filter(Boolean)
+        .forEach(origin => allowedOrigins.add(origin));
+}
+
+const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+
+    try {
+        const { protocol, hostname } = new URL(origin);
+        return (
+            allowedOrigins.has(origin) ||
+            (protocol === 'https:' && hostname.endsWith('.vercel.app')) ||
+            (protocol === 'http:' && hostname === 'localhost')
+        );
+    } catch {
+        return false;
+    }
+};
 
 const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        if (
-            allowedOrigins.includes(origin) ||
-            origin.endsWith('.vercel.app') ||
-            origin.startsWith('http://localhost:')
-        ) {
+        if (isAllowedOrigin(origin)) {
             return callback(null, true);
         }
-        return callback(null, true);
+
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Allow-Headers'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     optionsSuccessStatus: 200
 };
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+
+    if (isAllowedOrigin(origin)) {
+        res.header('Access-Control-Allow-Origin', origin || '*');
+        res.header('Vary', 'Origin');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+        res.header(
+            'Access-Control-Allow-Headers',
+            req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
+        );
+    }
+
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+
+    return next();
+});
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
