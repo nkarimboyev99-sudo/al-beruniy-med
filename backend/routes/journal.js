@@ -6,6 +6,84 @@ const Category = require('../models/Category');
 const Diagnosis = require('../models/Diagnosis');
 const { auth, doctorOrAdmin } = require('../middleware/auth');
 
+const normalizeText = (value) => (value || '').toString().trim().toLowerCase();
+const toId = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    if (value._id) return value._id.toString();
+    return value.toString();
+};
+
+const isResultConfirmed = (results = {}) => results.isConfirmed === true ||
+    (results.isConfirmed === undefined && !!results.savedAt);
+
+const getJournalDate = (pd) => pd.results?.savedAt || pd.createdAt;
+
+const rowMatchesCategory = (values = {}, categoryId, categoryName) => {
+    if (!categoryId) return true;
+    const rowCategoryId = toId(values._categoryId);
+    const rowCategoryName = normalizeText(values._categoryName);
+
+    if (!rowCategoryId && !rowCategoryName) return true;
+
+    return (rowCategoryId && rowCategoryId === categoryId) ||
+        (rowCategoryName && rowCategoryName === normalizeText(categoryName));
+};
+
+const entryMatchesCategory = (pd, categoryId, categoryName) => {
+    if (!categoryId) return true;
+
+    if (Array.isArray(pd.diagnosisPrices) && pd.diagnosisPrices.some(dp =>
+        toId(dp.categoryId) === categoryId ||
+        normalizeText(dp.categoryName) === normalizeText(categoryName)
+    )) {
+        return true;
+    }
+
+    if (toId(pd.diagnosis?.category) === categoryId) return true;
+
+    return (pd.results?.rows || []).some(row => rowMatchesCategory(row.values || {}, categoryId, categoryName));
+};
+
+const addResultValue = (target, key, value) => {
+    if (!key || value === undefined || value === null || value === '') return;
+    target[key] = value;
+};
+
+const extractResultValues = (pd, categoryId, categoryName) => {
+    const resultValues = {};
+
+    if (!pd.results) return resultValues;
+
+    const columns = Array.isArray(pd.results.columns) ? pd.results.columns : [];
+    const idName = columns[0]?.id || 'col_1';
+    const idResult = columns[1]?.id || 'col_2';
+
+    (pd.results.rows || []).forEach(row => {
+        const values = row.values || {};
+        if (!rowMatchesCategory(values, categoryId, categoryName)) return;
+
+        const resultValue = values[idResult];
+        const testName = values[idName];
+        const diagnosisId = toId(values._diagnosisId);
+
+        addResultValue(resultValues, diagnosisId ? `diagnosis:${diagnosisId}` : '', resultValue);
+        addResultValue(resultValues, testName, resultValue);
+
+        Object.entries(values).forEach(([key, value]) => {
+            if (key.startsWith('_') || key === idName || key === idResult) return;
+            if (value && typeof value === 'object') return;
+            addResultValue(resultValues, key, value);
+        });
+    });
+
+    if (pd.results.values && typeof pd.results.values === 'object') {
+        Object.entries(pd.results.values).forEach(([key, value]) => addResultValue(resultValues, key, value));
+    }
+
+    return resultValues;
+};
+
 // Get categories for Journal tabs
 router.get('/categories', auth, doctorOrAdmin, async (req, res) => {
     try {
@@ -23,7 +101,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
 
         let query = { isActive: true };
 
-        // Filter by date range or month
+        // Filter by date range or month. Results saved date is handled after fetching.
         if (month && typeof month === 'string' && month.includes('-')) {
             const [yearStr, monthStr] = month.split('-');
             const year = parseInt(yearStr, 10);
@@ -31,16 +109,25 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
             if (!isNaN(year) && !isNaN(mon)) {
                 const start = new Date(year, mon, 1);
                 const end = new Date(year, mon + 1, 0, 23, 59, 59, 999);
-                query.createdAt = { $gte: start, $lte: end };
+                query.$or = [
+                    { 'results.savedAt': { $gte: start, $lte: end } },
+                    { 'results.savedAt': { $exists: false }, createdAt: { $gte: start, $lte: end } },
+                    { 'results.savedAt': null, createdAt: { $gte: start, $lte: end } }
+                ];
             }
         } else if (dateFrom || dateTo) {
-            query.createdAt = {};
-            if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
+            const dateQuery = {};
+            if (dateFrom) dateQuery.$gte = new Date(dateFrom);
             if (dateTo) {
                 const end = new Date(dateTo);
                 end.setHours(23, 59, 59, 999);
-                query.createdAt.$lte = end;
+                dateQuery.$lte = end;
             }
+            query.$or = [
+                { 'results.savedAt': dateQuery },
+                { 'results.savedAt': { $exists: false }, createdAt: dateQuery },
+                { 'results.savedAt': null, createdAt: dateQuery }
+            ];
         }
 
         const patientDiagnoses = await PatientDiagnosis.find(query)
@@ -66,56 +153,20 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
         }
 
         // Filter patient diagnoses relevant to selected category if specified
-        const filteredEntries = patientDiagnoses.filter(pd => {
-            if (!categoryId || !selectedCategory) return true;
-
-            // Check diagnosisPrices
-            if (Array.isArray(pd.diagnosisPrices) && pd.diagnosisPrices.length > 0) {
-                const matchPrice = pd.diagnosisPrices.some(dp => 
-                    (dp.categoryId && dp.categoryId.toString() === categoryId) ||
-                    (dp.categoryName && dp.categoryName.toLowerCase() === selectedCategory.name.toLowerCase())
-                );
-                if (matchPrice) return true;
-            }
-
-            // Check direct diagnosis reference
-            if (pd.diagnosis && pd.diagnosis.category && pd.diagnosis.category.toString() === categoryId) {
-                return true;
-            }
-
-            return true;
-        });
+        const filteredEntries = patientDiagnoses.filter(pd =>
+            entryMatchesCategory(pd, categoryId, selectedCategory?.name)
+        );
 
         // Format rows for Journal table
         const rows = filteredEntries.map(pd => {
             const patient = pd.patient || {};
-            const resultValues = {};
-
-            // Extract results rows values with deep extraction
-            if (pd.results) {
-                if (Array.isArray(pd.results.rows)) {
-                    pd.results.rows.forEach(r => {
-                        if (r.values && typeof r.values === 'object') {
-                            Object.assign(resultValues, r.values);
-                        }
-                        if (r && typeof r === 'object') {
-                            Object.entries(r).forEach(([k, v]) => {
-                                if (k !== 'values' && k !== '_id' && typeof v !== 'object') {
-                                    resultValues[k] = v;
-                                }
-                            });
-                        }
-                    });
-                }
-                if (pd.results.values && typeof pd.results.values === 'object') {
-                    Object.assign(resultValues, pd.results.values);
-                }
-            }
+            const resultValues = extractResultValues(pd, categoryId, selectedCategory?.name);
 
             let formattedDate = '';
             try {
-                if (pd.createdAt) {
-                    formattedDate = new Date(pd.createdAt).toISOString().split('T')[0];
+                const journalDate = getJournalDate(pd);
+                if (journalDate) {
+                    formattedDate = new Date(journalDate).toISOString().split('T')[0];
                 }
             } catch (e) {
                 formattedDate = '';
@@ -131,7 +182,8 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
                 referringDoctor: pd.customReferringDoctor || patient.referringDoctor || 'amb',
                 totalPrice: pd.totalAmount || 0,
                 results: resultValues,
-                customValues: pd.journalCustomValues || {}
+                customValues: pd.journalCustomValues || {},
+                hasResults: isResultConfirmed(pd.results)
             };
         });
 
