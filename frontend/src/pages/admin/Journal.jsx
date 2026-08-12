@@ -137,7 +137,6 @@ function Journal() {
         const catName = journalData.category?.name || 'Jurnal'
         const fileName = `Jurnal_${catName}_${selectedMonth}.xls`
 
-        // Dynamically build HTML table for Excel export
         let tableHTML = `
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head>
@@ -156,7 +155,7 @@ function Journal() {
                 <![endif]-->
                 <style>
                     table { border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; }
-                    th, td { border: 1px solid #999; padding: 6px 10px; text-align: center; font-size: 13px; }
+                    th, td { border: 1px solid #999; padding: 6px 10px; text-align: center; font-size: 13px; color: #000; }
                     th { background-color: #e2e8f0; font-weight: bold; }
                     .title { font-size: 18px; font-weight: bold; text-align: center; border: none; padding: 12px; }
                     .number { mso-number-format:"\#\,\#\#0"; }
@@ -174,8 +173,8 @@ function Journal() {
                         <th>Ф.И.О (Bemor)</th>
                         <th>Дата (Sana)</th>
                         <th>Направил (Yo'naltirgan)</th>
-                        <th>Narxi (so'm)</th>
                         ${(journalData.testNames || []).map(t => `<th>${t.name}</th>`).join('')}
+                        <th>Narxi (so'm)</th>
                     </tr>
         `
 
@@ -186,11 +185,11 @@ function Journal() {
                     <td style="text-align: left;">${p.patientName}</td>
                     <td>${p.date}</td>
                     <td>${p.referringDoctor || 'amb'}</td>
-                    <td class="number">${Number(p.totalPrice || 0).toLocaleString()}</td>
                     ${(journalData.testNames || []).map(t => {
                         const val = p.results[t.code] || p.results[t.name] || p.customValues[t.code] || p.customValues[t.name] || '-'
                         return `<td>${val}</td>`
                     }).join('')}
+                    <td class="number">${Number(p.totalPrice || 0).toLocaleString()}</td>
                 </tr>
             `
         })
@@ -325,12 +324,12 @@ function Journal() {
                                     <th className="col-name">Ф.И.О (Bemor)</th>
                                     <th className="col-date">Дата (Sana)</th>
                                     <th className="col-ref">Направил (Yo'naltirgan)</th>
-                                    <th className="col-price">Narxi (so'm)</th>
                                     {(journalData.testNames || []).map((test) => (
                                         <th key={test._id || test.code || test.name} className="col-test">
                                             {test.name}
                                         </th>
                                     ))}
+                                    <th className="col-price">Narxi (so'm)</th>
                                     <th className="col-action no-print">Amallar</th>
                                 </tr>
                             </thead>
@@ -342,7 +341,7 @@ function Journal() {
                                         <tr key={patient._id} className={isEditing ? 'editing-row' : ''}>
                                             <td className="col-num font-mono">{patient.dailyNumber || idx + 1}</td>
                                             <td className="col-name font-medium">{patient.patientName}</td>
-                                            <td className="col-date text-muted">{patient.date}</td>
+                                            <td className="col-date">{patient.date}</td>
 
                                             {/* Yo'naltirgan shifokor */}
                                             <td className="col-ref">
@@ -358,23 +357,6 @@ function Journal() {
                                                     />
                                                 ) : (
                                                     <span>{patient.referringDoctor || 'amb'}</span>
-                                                )}
-                                            </td>
-
-                                            {/* Narxi (so'm) */}
-                                            <td className="col-price font-mono font-medium">
-                                                {isEditing ? (
-                                                    <input
-                                                        type="number"
-                                                        className="cell-input num-input"
-                                                        value={editForm.totalPrice || 0}
-                                                        onChange={(e) => setEditForm({
-                                                            ...editForm,
-                                                            totalPrice: e.target.value
-                                                        })}
-                                                    />
-                                                ) : (
-                                                    <span>{Number(patient.totalPrice || 0).toLocaleString()} so'm</span>
                                                 )}
                                             </td>
 
@@ -408,6 +390,23 @@ function Journal() {
                                                     </td>
                                                 )
                                             })}
+
+                                            {/* Narxi (so'm) - OXIRGI USTUN */}
+                                            <td className="col-price font-mono font-bold">
+                                                {isEditing ? (
+                                                    <input
+                                                        type="number"
+                                                        className="cell-input num-input"
+                                                        value={editForm.totalPrice || 0}
+                                                        onChange={(e) => setEditForm({
+                                                            ...editForm,
+                                                            totalPrice: e.target.value
+                                                        })}
+                                                    />
+                                                ) : (
+                                                    <span>{Number(patient.totalPrice || 0).toLocaleString()} so'm</span>
+                                                )}
+                                            </td>
 
                                             {/* Amallar (Tahrirlash / Saqlash) */}
                                             <td className="col-action no-print">
