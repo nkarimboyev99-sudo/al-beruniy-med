@@ -14,6 +14,7 @@ const transactionRoutes = require('./routes/transactions');
 const queueTicketRoutes = require('./routes/queueTickets');
 const categoryRoutes = require('./routes/categories');
 const referringDoctorRoutes = require('./routes/referringDoctors');
+const journalRoutes = require('./routes/journal');
 const {
     getDiagnosisPaymentAmount,
     normalizeDiagnosisPaymentSnapshot
@@ -105,6 +106,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/queue-tickets', queueTicketRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/referring-doctors', referringDoctorRoutes);
+app.use('/api/journal', journalRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

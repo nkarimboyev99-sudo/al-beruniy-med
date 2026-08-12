@@ -3,11 +3,13 @@ import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     UserPlus,
     User as UserIcon,
-    LogOut
+    LogOut,
+    BookOpen
 } from 'lucide-react'
 import '../admin/AdminLayout.css'
 
 import RegistratorPatients from './RegistratorPatients'
+import Journal from '../admin/Journal'
 import AddPatientPage from '../doctor/AddPatientPage'
 import DiagnosisForm from '../doctor/DiagnosisForm'
 import ProfileSettings from '../admin/ProfileSettings'
@@ -56,6 +58,7 @@ function RegistratorDashboard() {
 
     const menuItems = [
         { path: '/registrator/patients', icon: UserPlus, label: 'Bemorlar' },
+        { path: '/registrator/journal', icon: BookOpen, label: 'Jurnal' },
         { path: '/registrator/settings', icon: UserIcon, label: 'Profil' },
     ]
 
@@ -102,6 +105,7 @@ function RegistratorDashboard() {
                         <Route path="patients" element={<RegistratorPatients />} />
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
+                        <Route path="journal" element={<Journal />} />
                         <Route path="settings" element={<ProfileSettings />} />
                     </Routes>
                 </main>

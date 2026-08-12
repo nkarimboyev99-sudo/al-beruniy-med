@@ -4,12 +4,14 @@ import {
     UserPlus,
     User as UserIcon,
     LogOut,
-    FileText
+    FileText,
+    BookOpen
 } from 'lucide-react'
 import '../admin/AdminLayout.css'
 
 // Admin sahifalarini import qilish (Doktorlar bo'limisiz)
 import PatientManagement from '../admin/PatientManagement'
+import Journal from '../admin/Journal'
 import DiagnosisForm from './DiagnosisForm'
 import AddPatientPage from './AddPatientPage'
 import DoctorAnalyses from './DoctorAnalyses'
@@ -66,6 +68,7 @@ function DoctorDashboard() {
     // Menu items
     const menuItems = [
         { path: '/doctor/patients', icon: UserPlus, label: 'Bemorlar' },
+        { path: '/doctor/journal', icon: BookOpen, label: 'Jurnal' },
         { path: '/doctor/settings', icon: UserIcon, label: 'Profil' },
     ]
 
@@ -121,6 +124,7 @@ function DoctorDashboard() {
                         <Route path="patients/add" element={<AddPatientPage />} />
                         <Route path="patients/diagnosis/:patientId" element={<DiagnosisForm />} />
                         <Route path="analyses" element={<DoctorAnalyses />} />
+                        <Route path="journal" element={<Journal />} />
                         <Route path="settings" element={<ProfileSettings />} />
                     </Routes>
                 </main>

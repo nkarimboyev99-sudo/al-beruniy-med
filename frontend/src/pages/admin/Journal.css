@@ -1,0 +1,435 @@
+.journal-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 40px;
+}
+
+/* Header */
+.journal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.journal-title-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.journal-header-icon {
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.journal-title-box h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.journal-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.journal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.journal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.excel-btn {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.excel-btn:hover {
+    background: #15803d;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.print-btn {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.print-btn:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.refresh-btn {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 10px;
+}
+
+.refresh-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* Toast */
+.journal-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Controls */
+.journal-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px 24px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.journal-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.search-box input:focus {
+    border-color: #2563eb;
+}
+
+.month-picker {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.calendar-icon {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.month-picker input {
+    padding: 10px 14px 10px 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #0f172a;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Tabs */
+.category-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.category-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.category-tabs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #edf2f7;
+    color: #1e293b;
+}
+
+.tab-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* Table Card */
+.journal-table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    padding: 20px;
+}
+
+.table-header-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.table-header-banner h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.table-header-banner span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* Table Wrapper */
+.journal-table-wrapper {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.journal-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.journal-excel-table th,
+.journal-excel-table td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.journal-excel-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.journal-excel-table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.journal-excel-table tr:hover {
+    background-color: #f1f5f9;
+}
+
+.editing-row {
+    background-color: #eff6ff !important;
+}
+
+/* Columns */
+.col-num { width: 50px; font-weight: 600; }
+.col-name { text-align: left !important; min-width: 180px; font-weight: 600; }
+.col-date { min-width: 100px; }
+.col-ref { min-width: 120px; }
+.col-price { min-width: 120px; color: #16a34a; }
+.col-test { min-width: 100px; }
+.col-action { width: 80px; }
+
+.result-val {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.result-empty {
+    color: #cbd5e1;
+}
+
+/* Cell Inputs for Editing */
+.cell-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    background: #ffffff;
+}
+
+.num-input {
+    text-align: right;
+}
+
+.test-cell-input {
+    text-align: center;
+}
+
+/* Action Buttons */
+.action-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.edit-btn { background: #e0f2fe; color: #0284c7; }
+.edit-btn:hover { background: #0284c7; color: #ffffff; }
+
+.save-btn { background: #dcfce7; color: #16a34a; }
+.save-btn:hover { background: #16a34a; color: #ffffff; }
+
+.cancel-btn { background: #fee2e2; color: #dc2626; }
+.cancel-btn:hover { background: #dc2626; color: #ffffff; }
+
+.table-loader, .table-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    color: #64748b;
+    gap: 12px;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+    color: #2563eb;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* PRINT STYLES */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    .no-print,
+    .admin-sidebar,
+    .journal-header,
+    .journal-controls {
+        display: none !important;
+    }
+
+    .journal-page,
+    .journal-table-card,
+    .journal-table-card * {
+        visibility: visible;
+    }
+
+    .journal-page {
+        padding: 0;
+        margin: 0;
+    }
+
+    .journal-table-card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+    }
+
+    .journal-excel-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 11px;
+    }
+
+    .journal-excel-table th,
+    .journal-excel-table td {
+        border: 1px solid #000000 !important;
+        padding: 4px 6px;
+    }
+
+    .table-header-banner h3 {
+        font-size: 16px;
+        color: #000000;
+    }
+}

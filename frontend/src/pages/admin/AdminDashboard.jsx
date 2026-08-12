@@ -5,6 +5,7 @@ import {
     UserPlus,
     UserCheck,
     Wallet,
+    BookOpen,
     Settings as SettingsIcon,
     LogOut,
     Menu,
@@ -21,6 +22,7 @@ import PatientManagement from './PatientManagement'
 import DiagnosisManagement from './DiagnosisManagement'
 import Accounting from './Accounting'
 import Settings from './Settings'
+import Journal from './Journal'
 import AddPatientPage from '../doctor/AddPatientPage'
 import DiagnosisForm from '../doctor/DiagnosisForm'
 
@@ -83,6 +85,7 @@ function AdminDashboard() {
         { path: '/admin/diagnoses', icon: UserPlus, label: 'Analizlar' },
         { path: '/admin/referring', icon: UserCheck, label: 'Yo\'naltirgan' },
         { path: '/admin/accounting', icon: Wallet, label: 'Hisob-kitob' },
+        { path: '/admin/journal', icon: BookOpen, label: 'Jurnal' },
         { path: '/admin/settings', icon: SettingsIcon, label: 'Sozlamalar' },
     ]
 
@@ -141,6 +144,7 @@ function AdminDashboard() {
                         <Route path="referring" element={<ReferringDoctors />} />
                         <Route path="diagnoses" element={<DiagnosisManagement />} />
                         <Route path="accounting" element={<Accounting />} />
+                        <Route path="journal" element={<Journal />} />
                         <Route path="settings" element={<Settings />} />
                     </Routes>
                 </main>
