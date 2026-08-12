@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding: 20px;
     padding-bottom: 40px;
     width: 100%;
     box-sizing: border-box;
@@ -9,7 +10,7 @@
 
 /* Header Card */
 .journal-header-card {
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
@@ -22,6 +23,10 @@
     color: #0f172a !important;
     width: 100%;
     box-sizing: border-box;
+    overflow: visible !important;
+    position: relative;
+    z-index: 20;
+    visibility: visible !important;
 }
 
 .journal-title-box {
@@ -53,20 +58,24 @@
 }
 
 .journal-actions {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    flex-shrink: 0;
+    visibility: visible !important;
 }
 
 .journal-actions-top {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+    visibility: visible !important;
 }
 
 .journal-btn {
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
@@ -79,6 +88,7 @@
     outline: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
     white-space: nowrap;
+    visibility: visible !important;
 }
 
 .add-btn {
@@ -295,11 +305,11 @@
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible !important;
 }
 
 .table-header-banner {
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
@@ -307,6 +317,8 @@
     padding-bottom: 14px;
     border-bottom: 2px solid #cbd5e1;
     margin-bottom: 16px;
+    overflow: visible !important;
+    visibility: visible !important;
 }
 
 .table-header-banner h3 {

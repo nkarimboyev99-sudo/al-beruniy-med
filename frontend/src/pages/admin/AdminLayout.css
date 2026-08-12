@@ -513,7 +513,7 @@
     background: #f0f4f8;
 }
 
-.admin-content > *:not(.re-page):not(.re-list-page):not(.df-page):not(.ap-page):not(.pm-page) {
+.admin-content > *:not(.re-page):not(.re-list-page):not(.df-page):not(.ap-page):not(.pm-page):not(.journal-page) {
     padding: var(--space-lg);
 }
 
