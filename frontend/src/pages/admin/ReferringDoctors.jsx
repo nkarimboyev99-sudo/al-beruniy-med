@@ -27,6 +27,7 @@ function ReferringDoctors() {
     const [editingDoctor, setEditingDoctor] = useState(null)
     const [deletingDoctor, setDeletingDoctor] = useState(null)
     const [formData, setFormData] = useState({ fullName: '', phone: '+998', organization: '' })
+    const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' })
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
@@ -49,6 +50,7 @@ function ReferringDoctors() {
     const openPatients = async (doctor) => {
         setSelectedDoctor(doctor)
         setReferredPatients([])
+        setDateRange({ startDate: '', endDate: '' })
         setPatientsLoading(true)
         setShowPatientsModal(true)
         try {
@@ -297,8 +299,116 @@ function ReferringDoctors() {
                                 </div>
                             ) : (
                                 <>
+                                    {/* Date Range Calculator Card */}
+                                    <div style={{
+                                        background: '#f8fafc',
+                                        border: '1.5px solid #e2e8f0',
+                                        borderRadius: '12px',
+                                        padding: '14px 16px',
+                                        marginBottom: '16px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '0.85rem', color: '#1e293b' }}>
+                                                <Calendar size={16} color="#2563eb" />
+                                                <span>Sana oralig'i bo'yicha hisoblash</span>
+                                            </div>
+                                            {(dateRange.startDate || dateRange.endDate) && (
+                                                <button
+                                                    onClick={() => setDateRange({ startDate: '', endDate: '' })}
+                                                    style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '3px 8px', fontSize: '0.75rem', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+                                                >
+                                                    Tozalash (Barchasi)
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: '10px' }}>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#64748b', marginBottom: '4px' }}>
+                                                    Boshlang'ich sana
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={dateRange.startDate}
+                                                    onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+                                                    style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.82rem', background: '#fff', color: '#0f172a', boxSizing: 'border-box' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#64748b', marginBottom: '4px' }}>
+                                                    Tugash sanasi
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={dateRange.endDate}
+                                                    onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+                                                    style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.82rem', background: '#fff', color: '#0f172a', boxSizing: 'border-box' }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Range Result Box */}
+                                        {(dateRange.startDate || dateRange.endDate) && (
+                                            <div style={{
+                                                background: '#eff6ff',
+                                                border: '1px solid #bfdbfe',
+                                                borderRadius: '8px',
+                                                padding: '10px 14px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                flexWrap: 'wrap',
+                                                gap: '8px'
+                                            }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1e40af' }}>
+                                                        Hisoblangan sana oralig'i:
+                                                    </div>
+                                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1d4ed8', marginTop: '2px' }}>
+                                                        {dateRange.startDate ? new Date(dateRange.startDate).toLocaleDateString('uz-UZ') : 'Boshidan'} — {dateRange.endDate ? new Date(dateRange.endDate).toLocaleDateString('uz-UZ') : 'Bugungacha'}
+                                                    </div>
+                                                </div>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1e40af' }}>
+                                                        {(() => {
+                                                            const filteredList = referredPatients.filter(p => {
+                                                                if (!p.createdAt) return true
+                                                                const d = new Date(p.createdAt)
+                                                                if (dateRange.startDate && d < new Date(dateRange.startDate + 'T00:00:00')) return false
+                                                                if (dateRange.endDate && d > new Date(dateRange.endDate + 'T23:59:59')) return false
+                                                                return true
+                                                            })
+                                                            return `${filteredList.length} ta bemor`
+                                                        })()}
+                                                    </div>
+                                                    <div style={{ fontSize: '1rem', fontWeight: 800, color: '#15803d', marginTop: '2px' }}>
+                                                        {(() => {
+                                                            const filteredList = referredPatients.filter(p => {
+                                                                if (!p.createdAt) return true
+                                                                const d = new Date(p.createdAt)
+                                                                if (dateRange.startDate && d < new Date(dateRange.startDate + 'T00:00:00')) return false
+                                                                if (dateRange.endDate && d > new Date(dateRange.endDate + 'T23:59:59')) return false
+                                                                return true
+                                                            })
+                                                            const sum = filteredList.reduce((acc, p) => acc + Number(p.analysisTotal || 0), 0)
+                                                            return formatMoney(sum)
+                                                        })()}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-                                        Jami {referredPatients.length} ta bemor
+                                        Jami {referredPatients.length} ta bemor (ko'rsatilgan: {(() => {
+                                            return referredPatients.filter(p => {
+                                                if (!p.createdAt) return true
+                                                const d = new Date(p.createdAt)
+                                                if (dateRange.startDate && d < new Date(dateRange.startDate + 'T00:00:00')) return false
+                                                if (dateRange.endDate && d > new Date(dateRange.endDate + 'T23:59:59')) return false
+                                                return true
+                                            }).length
+                                        })()})
                                     </div>
                                     {(() => {
                                         const totals = getReferralTotals()
@@ -306,7 +416,7 @@ function ReferringDoctors() {
                                             { label: 'Bugun', value: totals.today, bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
                                             { label: 'Shu hafta', value: totals.week, bg: '#fefce8', border: '#fde68a', color: '#a16207' },
                                             { label: 'Shu oy', value: totals.month, bg: '#f5f3ff', border: '#ddd6fe', color: '#6d28d9' },
-                                            { label: 'Jami', value: totals.all, bg: '#ecfdf5', border: '#6ee7b7', color: '#059669' }
+                                            { label: 'Jami (Barchasi)', value: totals.all, bg: '#ecfdf5', border: '#6ee7b7', color: '#059669' }
                                         ]
                                         return (
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginBottom: '14px' }}>
@@ -329,7 +439,15 @@ function ReferringDoctors() {
                                         )
                                     })()}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        {referredPatients.map((patient, i) => (
+                                        {referredPatients
+                                            .filter(p => {
+                                                if (!p.createdAt) return true
+                                                const d = new Date(p.createdAt)
+                                                if (dateRange.startDate && d < new Date(dateRange.startDate + 'T00:00:00')) return false
+                                                if (dateRange.endDate && d > new Date(dateRange.endDate + 'T23:59:59')) return false
+                                                return true
+                                            })
+                                            .map((patient, i) => (
                                             <div key={patient._id} style={{
                                                 padding: '12px 16px', borderRadius: '10px',
                                                 background: i % 2 === 0 ? '#f9fafb' : '#fff',

@@ -24,6 +24,7 @@ function Accounting() {
     const [searchTerm, setSearchTerm] = useState('')
     const [filterType, setFilterType] = useState('all')
     const [activePeriod, setActivePeriod] = useState('daily')
+    const [customDateRange, setCustomDateRange] = useState({ startDate: '', endDate: '' })
     const [viewMode, setViewMode] = useState('table') // 'chart' | 'table'
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 15
@@ -138,7 +139,7 @@ function Accounting() {
         }
     }
 
-    // Period bo'yicha filtrlash (jadval uchun)
+    // Period bo'yicha filtrlash (jadval va statistikalar uchun)
     const getDateOnly = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
     const periodFilteredTransactions = useMemo(() => {
         const now = new Date()
@@ -155,11 +156,19 @@ function Accounting() {
                 const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
                 return td >= monthStart && td <= todayStart
             }
-            // yearly
-            const yearStart = new Date(now.getFullYear(), 0, 1)
-            return td >= yearStart && td <= todayStart
+            if (activePeriod === 'yearly') {
+                const yearStart = new Date(now.getFullYear(), 0, 1)
+                return td >= yearStart && td <= todayStart
+            }
+            if (activePeriod === 'custom') {
+                const fullDate = new Date(t.date)
+                if (customDateRange.startDate && fullDate < new Date(customDateRange.startDate + 'T00:00:00')) return false
+                if (customDateRange.endDate && fullDate > new Date(customDateRange.endDate + 'T23:59:59')) return false
+                return true
+            }
+            return true
         })
-    }, [transactions, activePeriod])
+    }, [transactions, activePeriod, customDateRange])
 
     const filteredTransactions = useMemo(() => {
         const term = searchTerm.toLowerCase()
@@ -374,6 +383,7 @@ function Accounting() {
                         { key: 'weekly', label: 'Haftalik', Icon: Calendar },
                         { key: 'monthly', label: 'Oylik', Icon: BarChart3 },
                         { key: 'yearly', label: 'Yillik', Icon: TrendingUp },
+                        { key: 'custom', label: 'Sana oralig\'i', Icon: Calendar },
                     ].map(({ key, label, Icon }) => (
                         <button key={key} className={`ptoggle-btn ${activePeriod === key ? 'active' : ''}`} onClick={() => setActivePeriod(key)}>
                             <Icon size={16} /> {label}
@@ -397,6 +407,93 @@ function Accounting() {
                     </button>
                 </div>
             </div>
+
+            {/* Custom Date Range Filter Box when activePeriod === 'custom' */}
+            {activePeriod === 'custom' && (
+                <div style={{
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '12px',
+                    padding: '16px 20px',
+                    marginBottom: 24,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: '0.95rem', color: '#0f172a' }}>
+                            <Calendar size={18} color="#2563eb" />
+                            <span>Sana oralig'i bo'yicha daromad va xarajatni hisoblash</span>
+                        </div>
+                        {(customDateRange.startDate || customDateRange.endDate) && (
+                            <button
+                                onClick={() => setCustomDateRange({ startDate: '', endDate: '' })}
+                                style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '4px 10px', fontSize: '0.8rem', fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+                            >
+                                Tozalash (Barchasi)
+                            </button>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 14 }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                                Boshlang'ich sana
+                            </label>
+                            <input
+                                type="date"
+                                value={customDateRange.startDate}
+                                onChange={(e) => setCustomDateRange({ ...customDateRange, startDate: e.target.value })}
+                                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem', background: '#fff', color: '#0f172a', boxSizing: 'border-box', fontWeight: 500 }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#475569', marginBottom: 4 }}>
+                                Tugash sanasi
+                            </label>
+                            <input
+                                type="date"
+                                value={customDateRange.endDate}
+                                onChange={(e) => setCustomDateRange({ ...customDateRange, endDate: e.target.value })}
+                                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.88rem', background: '#fff', color: '#0f172a', boxSizing: 'border-box', fontWeight: 500 }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Summary Calculation Box */}
+                    {(() => {
+                        const inc = periodFilteredTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
+                        const exp = periodFilteredTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
+                        const profit = inc - exp
+                        return (
+                            <div style={{
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '10px',
+                                padding: '12px 16px',
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                                gap: 12
+                            }}>
+                                <div>
+                                    <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Tranzaksiyalar</div>
+                                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginTop: 2 }}>{periodFilteredTransactions.length} ta</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 700, textTransform: 'uppercase' }}>Jami Kirim</div>
+                                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#16a34a', marginTop: 2 }}>{formatCurrency(inc)}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.72rem', color: '#dc2626', fontWeight: 700, textTransform: 'uppercase' }}>Jami Chiqim</div>
+                                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#dc2626', marginTop: 2 }}>{formatCurrency(exp)}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.72rem', color: profit >= 0 ? '#15803d' : '#b91c1c', fontWeight: 700, textTransform: 'uppercase' }}>Sof Foyda</div>
+                                    <div style={{ fontSize: '1.05rem', fontWeight: 800, color: profit >= 0 ? '#15803d' : '#b91c1c', marginTop: 2 }}>{formatCurrency(profit)}</div>
+                                </div>
+                            </div>
+                        )
+                    })()}
+                </div>
+            )}
 
             {/* Grafik ko'rinish */}
             {viewMode === 'chart' && (
