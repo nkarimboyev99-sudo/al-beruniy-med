@@ -140,6 +140,65 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
     }
 });
 
+// Add a new journal entry manually
+router.post('/entry', auth, doctorOrAdmin, async (req, res) => {
+    try {
+        const { patientName, categoryId, referringDoctor, totalPrice, date, results } = req.body;
+
+        if (!patientName) {
+            return res.status(400).json({ message: 'Bemor F.I.O kiritilishi shart' });
+        }
+
+        const { getNextDailyNumber } = require('../utils/dailyNumber');
+        const dailyNum = await getNextDailyNumber();
+
+        // Create new patient
+        const patient = await Patient.create({
+            fullName: patientName,
+            referringDoctor: referringDoctor || 'amb',
+            dailyNumber: dailyNum,
+            registeredBy: req.user._id
+        });
+
+        let selectedCat = null;
+        if (categoryId) {
+            selectedCat = await Category.findById(categoryId);
+        }
+
+        const entryDate = date ? new Date(date) : new Date();
+
+        const newEntry = await PatientDiagnosis.create({
+            patient: patient._id,
+            patientName: patient.fullName,
+            doctor: req.user._id,
+            doctorName: req.user.fullName,
+            diagnosisName: selectedCat ? selectedCat.name : 'Laboratoriya Jurnali',
+            dailyNumber: dailyNum,
+            customReferringDoctor: referringDoctor || 'amb',
+            totalAmount: Number(totalPrice) || 0,
+            diagnosisPrices: selectedCat ? [{
+                categoryId: selectedCat._id,
+                categoryName: selectedCat.name,
+                price: Number(totalPrice) || 0
+            }] : [],
+            results: {
+                title: selectedCat ? selectedCat.name : 'Jurnal Yozuvi',
+                savedAt: entryDate,
+                isConfirmed: true,
+                rows: [{
+                    values: results || {}
+                }]
+            },
+            createdAt: entryDate
+        });
+
+        res.status(201).json({ success: true, message: 'Yangi yozuv qo\'shildi', entry: newEntry });
+    } catch (error) {
+        console.error('Error creating journal entry:', error);
+        res.status(500).json({ message: 'Yangi yozuv qo\'shishda xatolik' });
+    }
+});
+
 // Update a journal entry (inline edit)
 router.put('/entry/:id', auth, doctorOrAdmin, async (req, res) => {
     try {

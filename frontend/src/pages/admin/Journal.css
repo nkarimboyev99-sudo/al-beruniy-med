@@ -5,17 +5,17 @@
     padding-bottom: 40px;
 }
 
-/* Header */
-.journal-header {
+/* Header Card */
+.journal-header-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
+    padding: 24px 28px;
+    background: #ffffff !important;
     border-radius: 16px;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08) !important;
+    color: #0f172a !important;
 }
 
 .journal-title-box {
@@ -25,27 +25,30 @@
 }
 
 .journal-header-icon {
-    color: #2563eb;
-    background: #eff6ff;
+    color: #2563eb !important;
+    background: #eff6ff !important;
     padding: 10px;
     border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
 }
 
 .journal-title-box h2 {
     font-size: 22px;
     font-weight: 700;
-    color: #0f172a;
+    color: #0f172a !important;
     margin: 0;
 }
 
 .journal-subtitle {
-    font-size: 13px;
-    color: #475569;
+    font-size: 14px;
+    color: #334155 !important;
     margin-top: 4px;
+    font-weight: 500;
 }
 
 .journal-actions {
     display: flex;
+    align-items: center;
     gap: 12px;
 }
 
@@ -53,44 +56,60 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
+    padding: 11px 20px;
     border-radius: 10px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.add-btn {
+    background: #7c3aed !important;
+    color: #ffffff !important;
+}
+
+.add-btn:hover {
+    background: #6d28d9 !important;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+    transform: translateY(-1px);
 }
 
 .excel-btn {
-    background: #16a34a;
-    color: #ffffff;
+    background: #16a34a !important;
+    color: #ffffff !important;
 }
 
 .excel-btn:hover {
-    background: #15803d;
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    background: #15803d !important;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+    transform: translateY(-1px);
 }
 
 .print-btn {
-    background: #2563eb;
-    color: #ffffff;
+    background: #2563eb !important;
+    color: #ffffff !important;
 }
 
 .print-btn:hover {
-    background: #1d4ed8;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    background: #1d4ed8 !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
 }
 
 .refresh-btn {
-    background: #f1f5f9;
-    color: #475569;
-    padding: 10px;
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 10px 14px;
 }
 
 .refresh-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
 }
 
 /* Toast */
@@ -100,11 +119,11 @@
     right: 24px;
     background: #0f172a;
     color: #ffffff;
-    padding: 12px 20px;
-    border-radius: 10px;
+    padding: 14px 24px;
+    border-radius: 12px;
     font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
     z-index: 1000;
     animation: fadeIn 0.3s ease;
 }
@@ -114,16 +133,16 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Controls */
-.journal-controls {
+/* Controls Card */
+.journal-controls-card {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 18px 24px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
+    padding: 20px 28px;
+    background: #ffffff !important;
     border-radius: 16px;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08) !important;
 }
 
 .journal-filter-row {
@@ -141,7 +160,7 @@
 
 .search-icon {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     color: #64748b;
@@ -149,18 +168,20 @@
 
 .search-box input {
     width: 100%;
-    padding: 10px 12px 10px 38px;
-    border: 1px solid #cbd5e1;
+    padding: 11px 14px 11px 42px;
+    border: 1.5px solid #cbd5e1;
     border-radius: 10px;
     font-size: 14px;
-    color: #0f172a;
-    background: #ffffff;
+    color: #0f172a !important;
+    background: #ffffff !important;
     outline: none;
     transition: border-color 0.2s ease;
+    font-weight: 500;
 }
 
 .search-box input:focus {
     border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .month-picker {
@@ -171,32 +192,33 @@
 
 .calendar-icon {
     position: absolute;
-    left: 12px;
+    left: 14px;
     color: #64748b;
     pointer-events: none;
 }
 
 .month-picker input {
-    padding: 10px 14px 10px 38px;
-    border: 1px solid #cbd5e1;
+    padding: 11px 16px 11px 42px;
+    border: 1.5px solid #cbd5e1;
     border-radius: 10px;
     font-size: 14px;
-    color: #0f172a;
-    background: #ffffff;
+    color: #0f172a !important;
+    background: #ffffff !important;
     outline: none;
     cursor: pointer;
+    font-weight: 600;
 }
 
-/* Tabs */
+/* Category Tabs */
 .category-tabs {
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
 }
 
 .category-tabs::-webkit-scrollbar {
-    height: 4px;
+    height: 6px;
 }
 
 .category-tabs::-webkit-scrollbar-thumb {
@@ -205,38 +227,38 @@
 }
 
 .tab-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
     font-weight: 600;
-    background: #f8fafc;
-    color: #334155;
-    border: 1px solid #cbd5e1;
+    background: #f8fafc !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s ease;
 }
 
 .tab-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
 }
 
 .tab-btn.active {
-    background: #2563eb;
-    color: #ffffff;
-    border-color: #2563eb;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
 }
 
 /* Table Card */
 .journal-table-card {
-    background: #ffffff;
+    background: #ffffff !important;
     border-radius: 16px;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08) !important;
     overflow: hidden;
-    padding: 20px;
+    padding: 24px;
 }
 
 .table-header-banner {
@@ -251,17 +273,17 @@
 .table-header-banner h3 {
     font-size: 18px;
     font-weight: 700;
-    color: #0f172a;
+    color: #0f172a !important;
     margin: 0;
 }
 
 .table-header-banner span {
     font-size: 14px;
     font-weight: 600;
-    color: #334155;
+    color: #334155 !important;
 }
 
-/* Table Wrapper */
+/* Table Wrapper & Grid */
 .journal-table-wrapper {
     overflow-x: auto;
     max-width: 100%;
@@ -270,21 +292,21 @@
 .journal-excel-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 13.5px;
     color: #0f172a !important;
 }
 
 .journal-excel-table th,
 .journal-excel-table td {
     border: 1px solid #cbd5e1;
-    padding: 9px 12px;
+    padding: 10px 14px;
     text-align: center;
     vertical-align: middle;
     color: #0f172a !important;
 }
 
 .journal-excel-table th {
-    background: #f1f5f9;
+    background: #f1f5f9 !important;
     color: #0f172a !important;
     font-weight: 700;
     white-space: nowrap;
@@ -305,14 +327,14 @@
     background-color: #eff6ff !important;
 }
 
-/* Columns & Text Contrast */
-.col-num { width: 50px; font-weight: 700; color: #0f172a !important; }
-.col-name { text-align: left !important; min-width: 180px; font-weight: 700; color: #0f172a !important; }
-.col-date { min-width: 100px; font-weight: 600; color: #1e293b !important; }
-.col-ref { min-width: 120px; font-weight: 600; color: #1e293b !important; }
-.col-price { min-width: 130px; color: #15803d !important; font-weight: 700; background-color: #f0fdf4; }
-.col-test { min-width: 100px; color: #0f172a !important; font-weight: 600; }
-.col-action { width: 80px; }
+/* Column Rules */
+.col-num { width: 60px; font-weight: 700; color: #0f172a !important; }
+.col-name { text-align: left !important; min-width: 200px; font-weight: 700; color: #0f172a !important; }
+.col-date { min-width: 110px; font-weight: 600; color: #1e293b !important; }
+.col-ref { min-width: 130px; font-weight: 600; color: #1e293b !important; }
+.col-price { min-width: 140px; color: #15803d !important; font-weight: 700; background-color: #f0fdf4; }
+.col-test { min-width: 110px; color: #0f172a !important; font-weight: 600; }
+.col-action { width: 90px; }
 
 .result-val {
     font-weight: 700;
@@ -323,17 +345,17 @@
     color: #94a3b8 !important;
 }
 
-/* Cell Inputs for Editing */
+/* Editing Cell Inputs */
 .cell-input {
     width: 100%;
-    padding: 6px 8px;
+    padding: 6px 10px;
     border: 1.5px solid #2563eb;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 600;
-    color: #0f172a;
+    color: #0f172a !important;
     outline: none;
-    background: #ffffff;
+    background: #ffffff !important;
 }
 
 .num-input {
@@ -342,6 +364,167 @@
 
 .test-cell-input {
     text-align: center;
+}
+
+/* Modal Overlay & Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.journal-add-modal {
+    background: #ffffff !important;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.form-group input {
+    padding: 10px 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #0f172a;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #2563eb;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-tests-section {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.tests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.test-input-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.test-input-item span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.test-input-item input {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.cancel-modal-btn {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+.cancel-modal-btn:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
 }
 
 /* Action Buttons */
@@ -355,9 +538,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -401,8 +584,9 @@
     
     .no-print,
     .admin-sidebar,
-    .journal-header,
-    .journal-controls {
+    .journal-header-card,
+    .journal-controls-card,
+    .modal-overlay {
         display: none !important;
     }
 

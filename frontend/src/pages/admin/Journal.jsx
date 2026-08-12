@@ -9,7 +9,8 @@ import {
     Save,
     X,
     Check,
-    RefreshCw
+    RefreshCw,
+    Plus
 } from 'lucide-react'
 import './Journal.css'
 
@@ -24,11 +25,21 @@ function Journal() {
     const [loading, setLoading] = useState(true)
     const [journalData, setJournalData] = useState({ category: null, testNames: [], patients: [] })
 
-    // Tahrirlash holatlari (Inline Editing)
+    // Tahrirlash va Yangi yozuv modal holatlari
     const [editingRowId, setEditingRowId] = useState(null)
     const [editForm, setEditForm] = useState({})
     const [saving, setSaving] = useState(false)
     const [notification, setNotification] = useState('')
+
+    // Yangi yozuv qo'shish modali
+    const [showAddModal, setShowAddModal] = useState(false)
+    const [newRowForm, setNewRowForm] = useState({
+        patientName: '',
+        referringDoctor: 'amb',
+        totalPrice: '',
+        date: new Date().toISOString().split('T')[0],
+        results: {}
+    })
 
     const printRef = useRef(null)
 
@@ -124,6 +135,50 @@ function Journal() {
                 fetchJournalData()
             } else {
                 showNotice('❌ Saqlashda xatolik yuz berdi')
+            }
+        } catch (err) {
+            showNotice('❌ Server bilan aloqa yo\'q')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    // Yangi yozuv saqlash
+    const handleCreateNewRow = async (e) => {
+        e.preventDefault()
+        if (!newRowForm.patientName.trim()) {
+            showNotice('⚠️ Bemor F.I.O kiritilishi shart')
+            return
+        }
+
+        setSaving(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/journal/entry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...newRowForm,
+                    categoryId: activeCategory
+                })
+            })
+
+            if (res.ok) {
+                showNotice('✅ Yangi yozuv muvaffaqiyatli qo\'shildi')
+                setShowAddModal(false)
+                setNewRowForm({
+                    patientName: '',
+                    referringDoctor: 'amb',
+                    totalPrice: '',
+                    date: new Date().toISOString().split('T')[0],
+                    results: {}
+                })
+                fetchJournalData()
+            } else {
+                showNotice('❌ Qo\'shishda xatolik yuz berdi')
             }
         } catch (err) {
             showNotice('❌ Server bilan aloqa yo\'q')
@@ -230,8 +285,8 @@ function Journal() {
 
     return (
         <div className="journal-page">
-            {/* Header section */}
-            <div className="journal-header glass-card">
+            {/* Header Section */}
+            <div className="journal-header-card">
                 <div className="journal-title-box">
                     <BookOpen className="journal-header-icon" size={28} />
                     <div>
@@ -243,6 +298,10 @@ function Journal() {
                 </div>
 
                 <div className="journal-actions">
+                    <button className="journal-btn add-btn" onClick={() => setShowAddModal(true)}>
+                        <Plus size={18} />
+                        <span>Yangi yozuv qo'shish</span>
+                    </button>
                     <button className="journal-btn excel-btn" onClick={handleExportExcel}>
                         <FileSpreadsheet size={18} />
                         <span>Excel (.xlsx) yuklash</span>
@@ -257,9 +316,9 @@ function Journal() {
             {/* Notification Toast */}
             {notification && <div className="journal-toast">{notification}</div>}
 
-            {/* Filter and Category Tabs Bar */}
-            <div className="journal-controls glass-card">
-                {/* Search & Month Filter */}
+            {/* Filter & Category Bar */}
+            <div className="journal-controls-card">
+                {/* Search & Month Picker */}
                 <div className="journal-filter-row">
                     <div className="search-box">
                         <Search size={18} className="search-icon" />
@@ -299,8 +358,8 @@ function Journal() {
                 </div>
             </div>
 
-            {/* Table Container (Printable Area) */}
-            <div className="journal-table-card glass-card" ref={printRef}>
+            {/* Table Container */}
+            <div className="journal-table-card" ref={printRef}>
                 <div className="table-header-banner">
                     <h3>Журнал для общего анализа ({currentCatName})</h3>
                     <span>{selectedMonth} y.</span>
@@ -446,6 +505,99 @@ function Journal() {
                     </div>
                 )}
             </div>
+
+            {/* Modal: Yangi yozuv qo'shish */}
+            {showAddModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content journal-add-modal">
+                        <div className="modal-header">
+                            <h3>Yangi Jurnal Yozuvi Qo'shish</h3>
+                            <button className="close-btn" onClick={() => setShowAddModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleCreateNewRow}>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label>Bemor F.I.O *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Bemor familiyasi va ismini kiriting"
+                                        value={newRowForm.patientName}
+                                        onChange={(e) => setNewRowForm({ ...newRowForm, patientName: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-row-2">
+                                    <div className="form-group">
+                                        <label>Yo'naltirgan Shifokor</label>
+                                        <input
+                                            type="text"
+                                            placeholder="amb"
+                                            value={newRowForm.referringDoctor}
+                                            onChange={(e) => setNewRowForm({ ...newRowForm, referringDoctor: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Narxi (so'm)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            value={newRowForm.totalPrice}
+                                            onChange={(e) => setNewRowForm({ ...newRowForm, totalPrice: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Sana</label>
+                                    <input
+                                        type="date"
+                                        value={newRowForm.date}
+                                        onChange={(e) => setNewRowForm({ ...newRowForm, date: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Dynamic test values inputs */}
+                                {journalData.testNames && journalData.testNames.length > 0 && (
+                                    <div className="form-tests-section">
+                                        <label className="section-label">Analiz Ko'rsatkichlari (Natijalar):</label>
+                                        <div className="tests-grid">
+                                            {journalData.testNames.map((test) => {
+                                                const key = test.code || test.name
+                                                return (
+                                                    <div key={key} className="test-input-item">
+                                                        <span>{test.name}</span>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Natija"
+                                                            value={newRowForm.results[key] || ''}
+                                                            onChange={(e) => setNewRowForm({
+                                                                ...newRowForm,
+                                                                results: {
+                                                                    ...newRowForm.results,
+                                                                    [key]: e.target.value
+                                                                }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="journal-btn cancel-modal-btn" onClick={() => setShowAddModal(false)}>
+                                    Bekor qilish
+                                </button>
+                                <button type="submit" className="journal-btn add-btn" disabled={saving}>
+                                    {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
