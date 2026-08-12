@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     UserPlus, Plus, Search, Edit2, Eye,
     Phone, Calendar, User, FileText,
-    Save, Check, X, Stethoscope, ClipboardList, Printer, AlertTriangle, Pencil
+    Save, Check, X, Stethoscope, ClipboardList, Printer, AlertTriangle, AlertCircle, Pencil
 } from 'lucide-react'
 import '../admin/DataManagement.css'
 import '../admin/rfp.css'
@@ -604,6 +604,13 @@ function RegistratorPatients() {
 
         const match = findDiagnosisByRef(values._diagnosisId, values[idName], values._categoryId)
         return getDiagnosisCategoryName(match, fallback)
+    }
+
+    const fmtDt = (date) => {
+        if (!date) return '-'
+        const parsedDate = new Date(date)
+        if (Number.isNaN(parsedDate.getTime())) return '-'
+        return `${parsedDate.toLocaleDateString('ru-RU')} ${parsedDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`
     }
 
     const printLabResult = (diagnosis, patient) => {
