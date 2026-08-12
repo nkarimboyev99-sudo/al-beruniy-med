@@ -30,13 +30,15 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
         };
 
         // Filter by date range or month
-        if (month) {
+        if (month && typeof month === 'string' && month.includes('-')) {
             const [yearStr, monthStr] = month.split('-');
             const year = parseInt(yearStr, 10);
             const mon = parseInt(monthStr, 10) - 1;
-            const start = new Date(year, mon, 1);
-            const end = new Date(year, mon + 1, 0, 23, 59, 59, 999);
-            query.createdAt = { $gte: start, $lte: end };
+            if (!isNaN(year) && !isNaN(mon)) {
+                const start = new Date(year, mon, 1);
+                const end = new Date(year, mon + 1, 0, 23, 59, 59, 999);
+                query.createdAt = { $gte: start, $lte: end };
+            }
         } else if (dateFrom || dateTo) {
             query.createdAt = {};
             if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
@@ -49,6 +51,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
 
         const patientDiagnoses = await PatientDiagnosis.find(query)
             .populate('patient', 'fullName dailyNumber referringDoctor phone gender age ageType createdAt')
+            .populate({ path: 'diagnosis', select: 'category name code' })
             .populate('doctor', 'fullName')
             .sort({ createdAt: -1 })
             .lean();
@@ -70,12 +73,23 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
 
         // Filter patient diagnoses relevant to selected category if specified
         const filteredEntries = patientDiagnoses.filter(pd => {
-            if (!categoryId) return true;
-            if (!pd.diagnosisPrices || pd.diagnosisPrices.length === 0) return true;
-            return pd.diagnosisPrices.some(dp => 
-                (dp.categoryId && dp.categoryId.toString() === categoryId) ||
-                (selectedCategory && dp.categoryName && dp.categoryName.toLowerCase() === selectedCategory.name.toLowerCase())
-            );
+            if (!categoryId || !selectedCategory) return true;
+
+            // Check diagnosisPrices
+            if (Array.isArray(pd.diagnosisPrices) && pd.diagnosisPrices.length > 0) {
+                const matchPrice = pd.diagnosisPrices.some(dp => 
+                    (dp.categoryId && dp.categoryId.toString() === categoryId) ||
+                    (dp.categoryName && dp.categoryName.toLowerCase() === selectedCategory.name.toLowerCase())
+                );
+                if (matchPrice) return true;
+            }
+
+            // Check direct diagnosis reference
+            if (pd.diagnosis && pd.diagnosis.category && pd.diagnosis.category.toString() === categoryId) {
+                return true;
+            }
+
+            return true;
         });
 
         // Format rows for Journal table
@@ -92,12 +106,21 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
                 });
             }
 
+            let formattedDate = '';
+            try {
+                if (pd.createdAt) {
+                    formattedDate = new Date(pd.createdAt).toISOString().split('T')[0];
+                }
+            } catch (e) {
+                formattedDate = '';
+            }
+
             return {
                 _id: pd._id,
                 patientId: patient._id || null,
                 dailyNumber: pd.dailyNumber || patient.dailyNumber || '-',
                 patientName: patient.fullName || pd.patientName || 'Noma\'lum',
-                date: pd.createdAt ? new Date(pd.createdAt).toISOString().split('T')[0] : '',
+                date: formattedDate,
                 createdAt: pd.createdAt,
                 referringDoctor: pd.customReferringDoctor || patient.referringDoctor || 'amb',
                 totalPrice: pd.totalAmount || 0,
