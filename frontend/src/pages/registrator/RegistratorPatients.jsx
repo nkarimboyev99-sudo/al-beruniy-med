@@ -606,7 +606,7 @@ function RegistratorPatients() {
         return getDiagnosisCategoryName(match, fallback)
     }
 
-    const fmtDt = (date) => {
+    const formatPrintDate = (date) => {
         if (!date) return '-'
         const parsedDate = new Date(date)
         if (Number.isNaN(parsedDate.getTime())) return '-'
@@ -670,8 +670,8 @@ function RegistratorPatients() {
                         <div class="print-patient-num">${numStr}</div>
                     </div>
                     <div class="print-patient-col">
-                        <span><b>Дата рег.:</b> ${fmtDt(diagnosis.createdAt)}</span>
-                        <span><b>Дата гот.:</b> ${fmtDt(diagnosis.results?.savedAt || diagnosis.updatedAt || diagnosis.createdAt)}</span>
+                        <span><b>Дата рег.:</b> ${formatPrintDate(diagnosis.createdAt)}</span>
+                        <span><b>Дата гот.:</b> ${formatPrintDate(diagnosis.results?.savedAt || diagnosis.updatedAt || diagnosis.createdAt)}</span>
                         <span><b>Пол:</b> ${patient.gender === 'male' ? 'Erkak' : 'Ayol'}</span>
                     </div>
                 </div>
