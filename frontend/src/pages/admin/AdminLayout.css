@@ -191,6 +191,9 @@
     display: flex;
     flex-direction: column;
     transition: margin-left var(--transition-normal);
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .sidebar-collapsed .admin-main {
@@ -508,9 +511,13 @@
 .admin-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     background: #f0f4f8;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
 }
 
 .admin-content > *:not(.re-page):not(.re-list-page):not(.df-page):not(.ap-page):not(.pm-page):not(.journal-page) {
