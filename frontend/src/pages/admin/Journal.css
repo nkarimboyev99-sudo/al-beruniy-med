@@ -349,14 +349,14 @@
     background: #f1f5f9;
 }
 
-/* FIX: width: max-content forces grid to stretch full length for swipe */
+/* Table uses auto layout so each column keeps its exact width */
 .journal-excel-table {
-    width: max-content !important;
-    min-width: 100% !important;
     border-collapse: collapse;
     font-size: 13px;
     color: #0f172a !important;
-    table-layout: fixed !important;
+    table-layout: auto !important;
+    width: auto !important;
+    min-width: auto !important;
 }
 
 .journal-excel-table th,
@@ -366,7 +366,7 @@
     text-align: center;
     vertical-align: middle;
     color: #0f172a !important;
-    word-break: break-word;
+    white-space: nowrap;
 }
 
 .journal-excel-table th {
@@ -391,63 +391,63 @@
     background-color: #eff6ff !important;
 }
 
-/* EXACT FIXED COLUMN WIDTHS */
+/* CONSISTENT COLUMN WIDTHS — same across all categories */
 .col-num {
-    width: 50px !important;
-    min-width: 50px !important;
-    max-width: 50px !important;
+    width: 45px;
+    min-width: 45px;
+    max-width: 45px;
     font-weight: 700;
     color: #0f172a !important;
 }
 
 .col-name {
     text-align: left !important;
-    width: 220px !important;
-    min-width: 180px !important;
-    max-width: 230px !important;
+    width: 180px;
+    min-width: 160px;
+    max-width: 180px;
     font-weight: 700;
     color: #0f172a !important;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .col-date {
-    width: 110px !important;
-    min-width: 100px !important;
-    max-width: 110px !important;
+    width: 90px;
+    min-width: 90px;
+    max-width: 95px;
     font-weight: 600;
     color: #1e293b !important;
 }
 
 .col-ref {
-    width: 100px !important;
-    min-width: 90px !important;
-    max-width: 110px !important;
+    width: 80px;
+    min-width: 70px;
+    max-width: 85px;
     font-weight: 600;
     color: #1e293b !important;
 }
 
 .col-test {
-    width: 130px !important;
-    min-width: 110px !important;
-    max-width: 160px !important;
+    width: 100px;
+    min-width: 80px;
+    max-width: 120px;
     color: #0f172a !important;
     font-weight: 600;
 }
 
 .col-price {
-    width: 140px !important;
-    min-width: 130px !important;
-    max-width: 150px !important;
+    width: 120px;
+    min-width: 110px;
+    max-width: 130px;
     color: #15803d !important;
     font-weight: 700;
     background-color: #f0fdf4;
 }
 
 .col-action {
-    width: 80px !important;
-    min-width: 80px !important;
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
 }
 
 .result-val {
