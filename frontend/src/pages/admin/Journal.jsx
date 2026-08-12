@@ -40,6 +40,8 @@ function Journal() {
     })
 
     const tableScrollRef = useRef(null)
+    const categoryScrollRef = useRef(null)
+    const [activeCell, setActiveCell] = useState(null)
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -275,6 +277,63 @@ function Journal() {
         })
     }
 
+    const handleCategoryScroll = (direction) => {
+        const node = categoryScrollRef.current
+        if (!node) return
+        node.scrollBy({
+            left: direction * Math.max(220, Math.floor(node.clientWidth * 0.6)),
+            behavior: 'smooth'
+        })
+    }
+
+    const getTableColumnCount = () => 5 + (journalData.testNames || []).length
+
+    const focusCell = (row, col) => {
+        window.requestAnimationFrame(() => {
+            const cell = tableScrollRef.current?.querySelector(`[data-cell-row="${row}"][data-cell-col="${col}"]`)
+            if (!cell) return
+            cell.focus({ preventScroll: true })
+            cell.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+        })
+    }
+
+    const selectCell = (row, col) => {
+        const safeRow = Math.min(Math.max(row, 0), filteredPatients.length - 1)
+        const safeCol = Math.min(Math.max(col, 0), getTableColumnCount() - 1)
+        const nextCell = { row: safeRow, col: safeCol }
+        setActiveCell(nextCell)
+        focusCell(nextCell.row, nextCell.col)
+    }
+
+    const handleCellKeyDown = (e, row, col) => {
+        if (e.target.tagName === 'INPUT') return
+
+        const keyMap = {
+            ArrowLeft: [0, -1],
+            ArrowRight: [0, 1],
+            ArrowUp: [-1, 0],
+            ArrowDown: [1, 0]
+        }
+        const move = keyMap[e.key]
+        if (!move) return
+
+        e.preventDefault()
+        selectCell(row + move[0], col + move[1])
+    }
+
+    const getCellProps = (row, col) => ({
+        tabIndex: 0,
+        'data-cell-row': row,
+        'data-cell-col': col,
+        onClick: () => selectCell(row, col),
+        onKeyDown: (e) => handleCellKeyDown(e, row, col)
+    })
+
+    const getCellClassName = (row, col, className) => {
+        const activeClass = activeCell?.row === row && activeCell?.col === col ? ' active-cell' : ''
+        return `${className} journal-cell${activeClass}`
+    }
+
     const currentCatName = journalData.category?.name || 'Laboratoriya Jurnali'
 
     return (
@@ -337,16 +396,32 @@ function Journal() {
                     </button>
                 </div>
 
-                <div className="category-tabs">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat._id}
-                            className={`tab-btn ${activeCategory === cat._id ? 'active' : ''}`}
-                            onClick={() => setActiveCategory(cat._id)}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
+                <div className="category-scroll-row">
+                    <button
+                        className="category-scroll-btn"
+                        onClick={() => handleCategoryScroll(-1)}
+                        title="Kategoriyalarni chapga surish"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <div className="category-tabs" ref={categoryScrollRef}>
+                        {categories.map((cat) => (
+                            <button
+                                key={cat._id}
+                                className={`tab-btn ${activeCategory === cat._id ? 'active' : ''}`}
+                                onClick={() => setActiveCategory(cat._id)}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        className="category-scroll-btn"
+                        onClick={() => handleCategoryScroll(1)}
+                        title="Kategoriyalarni o'ngga surish"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
                 </div>
             </div>
 
@@ -420,12 +495,16 @@ function Journal() {
 
                                     return (
                                         <tr key={patient._id} className={isEditing ? 'editing-row' : ''}>
-                                            <td className="col-num font-mono">{patient.dailyNumber || idx + 1}</td>
-                                            <td className="col-name font-medium" title={patient.patientName}>
+                                            <td className={getCellClassName(idx, 0, 'col-num font-mono')} {...getCellProps(idx, 0)}>
+                                                {patient.dailyNumber || idx + 1}
+                                            </td>
+                                            <td className={getCellClassName(idx, 1, 'col-name font-medium')} title={patient.patientName} {...getCellProps(idx, 1)}>
                                                 {patient.patientName}
                                             </td>
-                                            <td className="col-date">{patient.date}</td>
-                                            <td className="col-ref">
+                                            <td className={getCellClassName(idx, 2, 'col-date')} {...getCellProps(idx, 2)}>
+                                                {patient.date}
+                                            </td>
+                                            <td className={getCellClassName(idx, 3, 'col-ref')} {...getCellProps(idx, 3)}>
                                                 {isEditing ? (
                                                     <input
                                                         type="text"
@@ -441,7 +520,7 @@ function Journal() {
                                                 )}
                                             </td>
 
-                                            {(journalData.testNames || []).map((test) => {
+                                            {(journalData.testNames || []).map((test, testIdx) => {
                                                 const key = test.code || test.name
                                                 const idKey = test._id ? `diagnosis:${test._id}` : ''
                                                 const val = isEditing
@@ -449,7 +528,11 @@ function Journal() {
                                                     : getResultForTest(patient, test)
 
                                                 return (
-                                                    <td key={test._id || key} className="col-test">
+                                                    <td
+                                                        key={test._id || key}
+                                                        className={getCellClassName(idx, testIdx + 4, 'col-test')}
+                                                        {...getCellProps(idx, testIdx + 4)}
+                                                    >
                                                         {isEditing ? (
                                                             <input
                                                                 type="text"
@@ -473,7 +556,10 @@ function Journal() {
                                                 )
                                             })}
 
-                                            <td className="col-price font-mono font-bold">
+                                            <td
+                                                className={getCellClassName(idx, (journalData.testNames || []).length + 4, 'col-price font-mono font-bold')}
+                                                {...getCellProps(idx, (journalData.testNames || []).length + 4)}
+                                            >
                                                 {isEditing ? (
                                                     <input
                                                         type="number"
