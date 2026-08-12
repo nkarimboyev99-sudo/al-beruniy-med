@@ -21,13 +21,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
         const { categoryId, month, search, dateFrom, dateTo } = req.query;
 
-        let query = {
-            isActive: true,
-            $or: [
-                { 'results.savedAt': { $exists: true, $ne: null } },
-                { 'results.isConfirmed': true }
-            ]
-        };
+        let query = { isActive: true };
 
         // Filter by date range or month
         if (month && typeof month === 'string' && month.includes('-')) {
@@ -97,13 +91,25 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
             const patient = pd.patient || {};
             const resultValues = {};
 
-            // Extract results rows values
-            if (pd.results && Array.isArray(pd.results.rows)) {
-                pd.results.rows.forEach(r => {
-                    if (r.values && typeof r.values === 'object') {
-                        Object.assign(resultValues, r.values);
-                    }
-                });
+            // Extract results rows values with deep extraction
+            if (pd.results) {
+                if (Array.isArray(pd.results.rows)) {
+                    pd.results.rows.forEach(r => {
+                        if (r.values && typeof r.values === 'object') {
+                            Object.assign(resultValues, r.values);
+                        }
+                        if (r && typeof r === 'object') {
+                            Object.entries(r).forEach(([k, v]) => {
+                                if (k !== 'values' && k !== '_id' && typeof v !== 'object') {
+                                    resultValues[k] = v;
+                                }
+                            });
+                        }
+                    });
+                }
+                if (pd.results.values && typeof pd.results.values === 'object') {
+                    Object.assign(resultValues, pd.results.values);
+                }
             }
 
             let formattedDate = '';

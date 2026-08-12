@@ -92,6 +92,36 @@ function Journal() {
         fetchJournalData()
     }, [activeCategory, selectedMonth])
 
+    // Smart test value extractor
+    const getResultForTest = (patient, test) => {
+        if (!patient || !test) return '-'
+        const resMap = patient.results || {}
+        const custMap = patient.customValues || {}
+
+        const code = test.code
+        const name = test.name
+        const nameLower = name ? name.toLowerCase().trim() : ''
+
+        // 1. Match by code
+        if (code && resMap[code] !== undefined && resMap[code] !== '') return resMap[code]
+        if (code && custMap[code] !== undefined && custMap[code] !== '') return custMap[code]
+
+        // 2. Direct match by name
+        if (name && resMap[name] !== undefined && resMap[name] !== '') return resMap[name]
+        if (name && custMap[name] !== undefined && custMap[name] !== '') return custMap[name]
+
+        // 3. Case-insensitive / partial match
+        for (const [k, v] of Object.entries(resMap)) {
+            if (v === undefined || v === null || v === '' || v === '-') continue
+            const kLower = k.toLowerCase().trim()
+            if (nameLower && (kLower === nameLower || kLower.includes(nameLower) || nameLower.includes(kLower))) {
+                return v
+            }
+        }
+
+        return '-'
+    }
+
     // Bildirishnoma ko'rsatish
     const showNotice = (msg) => {
         setNotification(msg)
@@ -241,7 +271,7 @@ function Journal() {
                     <td>${p.date}</td>
                     <td>${p.referringDoctor || 'amb'}</td>
                     ${(journalData.testNames || []).map(t => {
-                        const val = p.results[t.code] || p.results[t.name] || p.customValues[t.code] || p.customValues[t.name] || '-'
+                        const val = getResultForTest(p, t)
                         return `<td>${val}</td>`
                     }).join('')}
                     <td class="number">${Number(p.totalPrice || 0).toLocaleString()}</td>
@@ -298,15 +328,27 @@ function Journal() {
                 </div>
 
                 <div className="journal-actions">
-                    <button className="journal-btn add-btn" onClick={() => setShowAddModal(true)}>
+                    <button
+                        className="journal-btn add-btn"
+                        onClick={() => setShowAddModal(true)}
+                        style={{ background: '#7c3aed', color: '#ffffff' }}
+                    >
                         <Plus size={18} />
-                        <span>Yangi yozuv qo'shish</span>
+                        <span>+ Yangi yozuv qo'shish</span>
                     </button>
-                    <button className="journal-btn excel-btn" onClick={handleExportExcel}>
+                    <button
+                        className="journal-btn excel-btn"
+                        onClick={handleExportExcel}
+                        style={{ background: '#16a34a', color: '#ffffff' }}
+                    >
                         <FileSpreadsheet size={18} />
                         <span>Excel (.xlsx) yuklash</span>
                     </button>
-                    <button className="journal-btn print-btn" onClick={handlePrint}>
+                    <button
+                        className="journal-btn print-btn"
+                        onClick={handlePrint}
+                        style={{ background: '#2563eb', color: '#ffffff' }}
+                    >
                         <Printer size={18} />
                         <span>Chop etish</span>
                     </button>
@@ -361,8 +403,35 @@ function Journal() {
             {/* Table Container */}
             <div className="journal-table-card" ref={printRef}>
                 <div className="table-header-banner">
-                    <h3>Журнал для общего анализа ({currentCatName})</h3>
-                    <span>{selectedMonth} y.</span>
+                    <div>
+                        <h3>Журнал для общего анализа ({currentCatName})</h3>
+                        <span className="month-badge">{selectedMonth} y.</span>
+                    </div>
+
+                    {/* Secondary Action Buttons for max visibility */}
+                    <div className="journal-actions-top no-print">
+                        <button
+                            className="journal-btn add-btn-sm"
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            <Plus size={16} />
+                            <span>+ Qo'shish</span>
+                        </button>
+                        <button
+                            className="journal-btn excel-btn-sm"
+                            onClick={handleExportExcel}
+                        >
+                            <FileSpreadsheet size={16} />
+                            <span>Excel</span>
+                        </button>
+                        <button
+                            className="journal-btn print-btn-sm"
+                            onClick={handlePrint}
+                        >
+                            <Printer size={16} />
+                            <span>Chop etish</span>
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -382,7 +451,7 @@ function Journal() {
                                     <th className="col-num">№</th>
                                     <th className="col-name">Ф.И.О (Bemor)</th>
                                     <th className="col-date">Дата (Sana)</th>
-                                    <th className="col-ref">Направил (Yo'naltirgan)</th>
+                                    <th className="col-ref">Направил</th>
                                     {(journalData.testNames || []).map((test) => (
                                         <th key={test._id || test.code || test.name} className="col-test">
                                             {test.name}
@@ -399,7 +468,9 @@ function Journal() {
                                     return (
                                         <tr key={patient._id} className={isEditing ? 'editing-row' : ''}>
                                             <td className="col-num font-mono">{patient.dailyNumber || idx + 1}</td>
-                                            <td className="col-name font-medium">{patient.patientName}</td>
+                                            <td className="col-name font-medium" title={patient.patientName}>
+                                                {patient.patientName}
+                                            </td>
                                             <td className="col-date">{patient.date}</td>
 
                                             {/* Yo'naltirgan shifokor */}
@@ -424,7 +495,7 @@ function Journal() {
                                                 const key = test.code || test.name
                                                 const val = isEditing
                                                     ? (editForm.results?.[key] ?? editForm.customValues?.[key] ?? '')
-                                                    : (patient.results[key] || patient.results[test.name] || patient.customValues[key] || '-')
+                                                    : getResultForTest(patient, test)
 
                                                 return (
                                                     <td key={test._id || key} className="col-test">
