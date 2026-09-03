@@ -120,45 +120,40 @@ router.put('/users/:id', auth, async (req, res) => {
 
         const { fullName, username, phone, role, isActive, password, viewScope } = req.body;
 
-        // O'zi tahrirlasa faqat fullName, phone, password ga ruxsat
-        const updateData = isAdmin
-            ? { fullName, username, phone, role, isActive, ...(viewScope !== undefined && { viewScope }) }
-            : { fullName, phone };
-
-        // undefined qiymatlarni olib tashlash (faqat parol o'zgartirilganda xatolik bo'lmasligi uchun)
-        Object.keys(updateData).forEach(key => {
-            if (updateData[key] === undefined) delete updateData[key];
-        });
-
-        // Agar yangi parol berilgan bo'lsa, uni ham yangilash
-        if (password && password.trim() !== '') {
-            const userToUpdate = await User.findById(req.params.id);
-            if (userToUpdate) {
-                userToUpdate.password = password;
-                await userToUpdate.save(); // Bu parolni hash qiladi (pre('save') hook orqali)
-            }
-        }
-
-        // Agar updateData bo'sh bo'lsa (faqat parol o'zgartirilgan), foydalanuvchini qaytarish
-        let user;
-        if (Object.keys(updateData).length > 0) {
-            user = await User.findByIdAndUpdate(
-                req.params.id,
-                updateData,
-                { new: true }
-            ).select('-password');
-        } else {
-            user = await User.findById(req.params.id).select('-password');
-        }
-
+        const user = await User.findById(req.params.id);
         if (!user) {
             return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });
         }
 
-        res.json(user);
+        // Parol yangilash
+        if (password && password.trim() !== '') {
+            if (password.trim().length < 4) {
+                return res.status(400).json({ message: 'Parol kamida 4 ta belgidan iborat bo\'lishi kerak' });
+            }
+            user.password = password.trim();
+        }
+
+        // Boshqa maydonlarni yangilash
+        if (fullName !== undefined && fullName.trim() !== '') user.fullName = fullName;
+        if (phone !== undefined) user.phone = phone;
+
+        // Admin uchun qo'shimcha maydonlar
+        if (isAdmin) {
+            if (username !== undefined && username.trim() !== '') user.username = username;
+            if (role !== undefined) user.role = role;
+            if (isActive !== undefined) user.isActive = isActive;
+            if (viewScope !== undefined) user.viewScope = viewScope;
+        }
+
+        await user.save();
+
+        const userObj = user.toObject();
+        delete userObj.password;
+
+        res.json(userObj);
     } catch (error) {
         console.error('Update user error:', error);
-        res.status(500).json({ message: 'Server xatosi' });
+        res.status(500).json({ message: error.message || 'Server xatosi' });
     }
 });
 
