@@ -689,7 +689,6 @@ function RegistratorPatients() {
                     <div class="result-section">
                         <div class="print-title-row">
                             <div class="print-title">${catName}</div>
-                            ${dailyNum ? `<div class="print-daily-num">№ ${dailyNum}</div>` : ''}
                         </div>
                         <table class="results-table">
                             <thead><tr>${pageCols.map(c => `<th style="width:${c.width}">${formatPrintCell(c.name)}</th>`).join('')}</tr></thead>
@@ -716,7 +715,6 @@ function RegistratorPatients() {
                                 Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
                                 Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
                             </div>
-                            <div class="pf-contact">Тахлил натижалари бўйича саволлар учун Врач лаборант: +998-93-777-31-61</div>
                         </div>
                     </div>
                 `
@@ -747,7 +745,7 @@ function RegistratorPatients() {
                     .print-patient-num { font-size: 24pt; font-weight: 900; }
                     .print-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; position: relative; }
                     .print-title { font-size: 13pt; font-weight: 700; text-align: left; }
-                    .print-daily-num { font-size: 16pt; font-weight: 900; color: #d63031; border: 2px solid #d63031; border-radius: 6px; padding: 1px 10px; margin-left: auto; }
+                    .print-daily-num { display: none; }
                     .results-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 10px; font-size: 12pt; }
                     .results-table th { border: 1px solid #333; padding: 5px 7px; background: #f0f0f0; font-weight: 700; text-align: left; word-wrap: break-word; }
                     .results-table td { border: 1px solid #aaa; padding: 4px 7px; text-align: left; word-wrap: break-word; white-space: pre-wrap; line-height: 1.35; }
@@ -761,7 +759,7 @@ function RegistratorPatients() {
                     .print-footer .doctor-label { font-weight: 700; }
                     .print-footer .doctor-name { font-weight: 700; }
                     .pf-disclaimer { text-align: center; border-top: 1px solid #aaa; padding-top: 6px; font-size: 10.5pt; line-height: 1.4; }
-                    .pf-contact { text-align: center; font-size: 10.5pt; font-weight: 600; margin-top: 4px; }
+                    .pf-contact { display: none; }
                     .print-page { width: 100%; }
                     .result-section { margin-top: 12px; break-inside: auto; page-break-inside: auto; }
                     .result-section + .result-section { margin-top: 16px; padding-top: 10px; border-top: 1px solid #cbd5e1; }

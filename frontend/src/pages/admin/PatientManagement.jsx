@@ -1126,7 +1126,7 @@ function PatientManagement({ readOnly = false }) {
                 <div class="result-section">
                     <div class="print-title-row">
                         <div class="print-title">${catName}</div>
-                        ${dailyNum ? `<div class="print-daily-num">№ ${dailyNum}</div>` : ''}
+
                     </div>
                     ${buildTableHTML(cols, rows, false, sourceDiagnosis)}
                     <div class="print-footer">
@@ -1139,7 +1139,7 @@ function PatientManagement({ readOnly = false }) {
                             Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
                             Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
                         </div>
-                        <div class="pf-contact">Тахлил натижалари бўйича саволлар учун Врач лаборант: +998-93-777-31-61</div>
+
                     </div>
                 </div>
             `
@@ -1241,13 +1241,7 @@ function PatientManagement({ readOnly = false }) {
             text-align: left;
         }
         .print-daily-num {
-            font-size: 16pt;
-            font-weight: 900;
-            color: #d63031;
-            border: 2px solid #d63031;
-            border-radius: 6px;
-            padding: 1px 10px;
-            margin-left: auto;
+            display: none;
         }
         .print-title-date {
             position: absolute;
@@ -1323,10 +1317,7 @@ function PatientManagement({ readOnly = false }) {
             line-height: 1.4;
         }
         .pf-contact {
-            text-align: center;
-            font-size: 10.5pt;
-            font-weight: 600;
-            margin-top: 4px;
+            display: none;
         }
 
         @media print {
@@ -1641,7 +1632,7 @@ function PatientManagement({ readOnly = false }) {
                             Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
                             Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
                         </div>
-                        <div class="pf-contact">Тахлил натижалари бўйича саволлар учун Врач лаборант: +998-93-777-31-61</div>
+
                     </div>
                 </div>
             `
@@ -1809,7 +1800,7 @@ function PatientManagement({ readOnly = false }) {
                     Лаборатор тахлил натижалари бу ТАШХИС ЭМАС.<br/>
                     Ташхис, бемор хакидаги барча маълумотлар йигиндиси асосида даволовчи шифокор томонидан куйилади.
                 </div>
-                <div class="pf-contact">Тахлил натижалари бўйича саволлар учун Врач лаборант: +998-93-777-31-61</div>
+
             </div>
         </body></html>`)
         printWindow.document.close()
