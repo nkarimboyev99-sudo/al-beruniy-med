@@ -33,7 +33,7 @@ function ProfileSettings() {
         setLoading(true)
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch(`/api/auth/users/${user.id}`, {
+            const res = await fetch(`/api/auth/users/${user.id || user._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(profileData)
@@ -62,7 +62,7 @@ function ProfileSettings() {
         setLoading(true)
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch(`/api/auth/users/${user.id}`, {
+            const res = await fetch(`/api/auth/users/${user.id || user._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ password: passwordData.newPassword })

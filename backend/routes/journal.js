@@ -210,13 +210,22 @@ router.post('/entry', auth, doctorOrAdmin, async (req, res) => {
         const { getNextDailyNumber } = require('../utils/dailyNumber');
         const dailyNum = await getNextDailyNumber();
 
-        // Create new patient
-        const patient = await Patient.create({
-            fullName: patientName,
-            referringDoctor: referringDoctor || 'amb',
-            dailyNumber: dailyNum,
-            registeredBy: req.user._id
+        // Mavjud bemorni qidirish (bugungi sana ichida)
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        let patient = await Patient.findOne({
+            fullName: new RegExp(`^\\s*${patientName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').trim()}\\s*$`, 'i'),
+            createdAt: { $gte: todayStart }
         });
+
+        if (!patient) {
+            patient = await Patient.create({
+                fullName: patientName,
+                referringDoctor: referringDoctor || 'amb',
+                dailyNumber: dailyNum,
+                registeredBy: req.user._id
+            });
+        }
 
         let selectedCat = null;
         if (categoryId) {

@@ -103,6 +103,7 @@ function RegistratorPatients() {
         win.document.write(`<!DOCTYPE html><html><head><title>Chek</title><meta charset="utf-8"/>
 <style>
     @page { margin: 3mm 4mm; size: 80mm auto; }
+    html { -webkit-print-color-adjust: exact; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; width: 74mm; font-size: 15px; color: #000; background: #fff; }
     .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
@@ -728,7 +729,8 @@ function RegistratorPatients() {
                 <title>${patient.fullName} — natijalar</title>
                 <style>
                     * { margin: 0; padding: 0; box-sizing: border-box; }
-                    @page { size: A4; margin: 12mm 15mm; }
+                    @page { size: A4; margin: 12mm 15mm 8mm 15mm; }
+                    html { -webkit-print-color-adjust: exact; }
                     body { font-family: Arial, sans-serif; font-size: 13pt; color: #111; background: #fff; }
                     .print-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid #555; margin-bottom: 12px; }
                     .ph-left { display: flex; align-items: center; gap: 16px; }

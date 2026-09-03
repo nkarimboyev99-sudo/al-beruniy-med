@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     UserPlus,
@@ -1171,7 +1171,8 @@ function PatientManagement({ readOnly = false }) {
     // Umumiy print uslubi (CSS)
     const getPrintStyle = () => `
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        @page { size: A4; margin: 12mm 15mm; }
+        @page { size: A4; margin: 12mm 15mm 8mm 15mm; }
+        html { -webkit-print-color-adjust: exact; }
         body { font-family: Arial, sans-serif; font-size: 13pt; color: #111; background: #fff; }
 
         /* ── Header ── */
@@ -1328,7 +1329,10 @@ function PatientManagement({ readOnly = false }) {
             margin-top: 4px;
         }
 
-        @media print { body { padding: 0; } }
+        @media print {
+            body { padding: 0; }
+            @page { margin: 12mm 15mm 8mm 15mm; }
+        }
     `
 
     // Bemor ma'lumotlari bloki (HTML)
@@ -1887,8 +1891,12 @@ function PatientManagement({ readOnly = false }) {
         }
     }
 
+    const [submitting, setSubmitting] = useState(false)
+
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (submitting) return
+        setSubmitting(true)
         setError('')
         setSuccess('')
 
@@ -1936,6 +1944,8 @@ function PatientManagement({ readOnly = false }) {
             }
         } catch (error) {
             setError('Server bilan aloqa yo\'q')
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -3218,31 +3228,35 @@ function PatientManagement({ readOnly = false }) {
         return patient.allResultsSaved === true
     }
 
-    const filteredPatients = patients.filter(patient => {
-        // Text search filter (includes _id for barcode scanner support)
-        const matchesSearch =
-            patient.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            patient.phone?.includes(searchTerm) ||
-            patient.passportNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            patient._id?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredPatients = useMemo(() => {
+        return patients.filter(patient => {
+            // Text search filter (includes _id for barcode scanner support)
+            const matchesSearch =
+                patient.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                patient.phone?.includes(searchTerm) ||
+                patient.passportNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                patient._id?.toLowerCase().includes(searchTerm.toLowerCase())
 
-        // Date/status filter
-        let matchesFilter = true
-        if (dateFilter === 'today') matchesFilter = isActiveToday(patient)
-        else if (dateFilter === 'pending') matchesFilter = hasPendingResults(patient)
-        else if (dateFilter === 'completed') matchesFilter = hasAllResultsCompleted(patient)
+            // Date/status filter
+            let matchesFilter = true
+            if (dateFilter === 'today') matchesFilter = isActiveToday(patient)
+            else if (dateFilter === 'pending') matchesFilter = hasPendingResults(patient)
+            else if (dateFilter === 'completed') matchesFilter = hasAllResultsCompleted(patient)
 
-        return matchesSearch && matchesFilter
-    })
+            return matchesSearch && matchesFilter
+        })
+    }, [patients, searchTerm, dateFilter])
 
     // Get today's active patients count (registered or diagnosed today)
-    const todayPatientsCount = patients.filter(p => isActiveToday(p)).length
-    const pendingCount = patients.filter(p => hasPendingResults(p)).length
-    const completedCount = patients.filter(p => hasAllResultsCompleted(p)).length
+    const todayPatientsCount = useMemo(() => patients.filter(p => isActiveToday(p)).length, [patients])
+    const pendingCount = useMemo(() => patients.filter(p => hasPendingResults(p)).length, [patients])
+    const completedCount = useMemo(() => patients.filter(p => hasAllResultsCompleted(p)).length, [patients])
 
     // Pagination
     const totalPages = Math.ceil(filteredPatients.length / PAGE_SIZE)
-    const pagedPatients = filteredPatients.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+    const pagedPatients = useMemo(() => {
+        return filteredPatients.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+    }, [filteredPatients, currentPage])
 
     const goToPage = (page) => {
         if (page < 1 || page > totalPages) return

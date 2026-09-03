@@ -125,20 +125,31 @@ router.put('/users/:id', auth, async (req, res) => {
             ? { fullName, username, phone, role, isActive, ...(viewScope !== undefined && { viewScope }) }
             : { fullName, phone };
 
+        // undefined qiymatlarni olib tashlash (faqat parol o'zgartirilganda xatolik bo'lmasligi uchun)
+        Object.keys(updateData).forEach(key => {
+            if (updateData[key] === undefined) delete updateData[key];
+        });
+
         // Agar yangi parol berilgan bo'lsa, uni ham yangilash
         if (password && password.trim() !== '') {
-            const user = await User.findById(req.params.id);
-            if (user) {
-                user.password = password;
-                await user.save(); // Bu parolni hash qiladi
+            const userToUpdate = await User.findById(req.params.id);
+            if (userToUpdate) {
+                userToUpdate.password = password;
+                await userToUpdate.save(); // Bu parolni hash qiladi (pre('save') hook orqali)
             }
         }
 
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            updateData,
-            { new: true }
-        ).select('-password');
+        // Agar updateData bo'sh bo'lsa (faqat parol o'zgartirilgan), foydalanuvchini qaytarish
+        let user;
+        if (Object.keys(updateData).length > 0) {
+            user = await User.findByIdAndUpdate(
+                req.params.id,
+                updateData,
+                { new: true }
+            ).select('-password');
+        } else {
+            user = await User.findById(req.params.id).select('-password');
+        }
 
         if (!user) {
             return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });

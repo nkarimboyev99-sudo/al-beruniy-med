@@ -35,11 +35,13 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
             .populate('registeredBy', 'fullName')
             .populate('diagnoses.diagnosis')
             .populate('diagnoses.medicines')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
 
         // PatientDiagnosis kolleksiyasidan har bir bemor uchun analiz holatini olish
         const allDiagnoses = await PatientDiagnosis.find({ isActive: true })
-            .select('patient results.savedAt results.isConfirmed createdAt dailyNumber');
+            .select('patient results.savedAt results.isConfirmed createdAt dailyNumber')
+            .lean();
 
         const diagnosisMap = {};
         allDiagnoses.forEach(d => {
@@ -53,7 +55,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
         });
 
         const result = patients.map(p => {
-            const pObj = p.toObject();
+            const pObj = { ...p };
             const diags = diagnosisMap[p._id.toString()] || [];
             pObj.diagnosisCount = diags.length;
             pObj.allResultsSaved = diags.length > 0 && diags.every(d => d.hasSavedResults);
@@ -96,7 +98,7 @@ router.get('/search/autocomplete', auth, doctorOrAdmin, async (req, res) => {
             fullName: { $regex: q, $options: 'i' }
         })
             .select('_id fullName phone address gender birthDate')
-            .limit(10000)
+            .limit(20)
             .sort({ fullName: 1 });
 
         res.json(patients);
@@ -135,6 +137,26 @@ router.post('/', auth, doctorOrAdmin, async (req, res) => {
     try {
         const { fullName, birthDate, phone, address, gender, referredBy } = req.body;
         const normalizedReferredBy = normalizeDoctorName(referredBy);
+
+        // Duplikat tekshiruv: bir xil ism bilan bugun ro'yxatdan o'tgan bemor bormi?
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        if (fullName && fullName.trim()) {
+            const duplicateQuery = {
+                fullName: new RegExp(`^\\s*${escapeRegex(fullName.trim())}\\s*$`, 'i'),
+                createdAt: { $gte: todayStart, $lte: todayEnd }
+            };
+            if (phone && phone.trim()) {
+                duplicateQuery.phone = phone.trim();
+            }
+            const existingPatient = await Patient.findOne(duplicateQuery);
+            if (existingPatient) {
+                return res.status(200).json(existingPatient);
+            }
+        }
 
         await backfillTodayDailyNumbers();
         const { getNextDailyNumber } = require('../utils/dailyNumber');

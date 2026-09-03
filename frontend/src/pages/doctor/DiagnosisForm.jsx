@@ -520,6 +520,7 @@ function DiagnosisForm() {
 <meta charset="utf-8"/>
 <style>
     @page { margin: 3mm 4mm; size: 80mm auto; }
+    html { -webkit-print-color-adjust: exact; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; width: 74mm; font-size: 15px; color: #000; background: #fff; }
     .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
