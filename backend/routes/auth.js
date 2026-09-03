@@ -120,37 +120,41 @@ router.put('/users/:id', auth, async (req, res) => {
 
         const { fullName, username, phone, role, isActive, password, viewScope } = req.body;
 
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });
-        }
+        const updateFields = {};
 
         // Parol yangilash
         if (password && password.trim() !== '') {
             if (password.trim().length < 4) {
                 return res.status(400).json({ message: 'Parol kamida 4 ta belgidan iborat bo\'lishi kerak' });
             }
-            user.password = password.trim();
+            const bcrypt = require('bcryptjs');
+            const salt = await bcrypt.genSalt(10);
+            updateFields.password = await bcrypt.hash(password.trim(), salt);
         }
 
         // Boshqa maydonlarni yangilash
-        if (fullName !== undefined && fullName.trim() !== '') user.fullName = fullName;
-        if (phone !== undefined) user.phone = phone;
+        if (fullName !== undefined && fullName.trim() !== '') updateFields.fullName = fullName.trim();
+        if (phone !== undefined) updateFields.phone = phone.trim();
 
         // Admin uchun qo'shimcha maydonlar
         if (isAdmin) {
-            if (username !== undefined && username.trim() !== '') user.username = username;
-            if (role !== undefined) user.role = role;
-            if (isActive !== undefined) user.isActive = isActive;
-            if (viewScope !== undefined) user.viewScope = viewScope;
+            if (username !== undefined && username.trim() !== '') updateFields.username = username.trim();
+            if (role !== undefined) updateFields.role = normalizeRole(role);
+            if (isActive !== undefined) updateFields.isActive = isActive;
+            if (viewScope !== undefined) updateFields.viewScope = viewScope;
         }
 
-        await user.save();
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateFields },
+            { new: true, runValidators: false }
+        ).select('-password');
 
-        const userObj = user.toObject();
-        delete userObj.password;
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Foydalanuvchi topilmadi' });
+        }
 
-        res.json(userObj);
+        res.json(updatedUser);
     } catch (error) {
         console.error('Update user error:', error);
         res.status(500).json({ message: error.message || 'Server xatosi' });
