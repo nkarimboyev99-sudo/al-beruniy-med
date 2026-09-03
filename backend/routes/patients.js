@@ -45,6 +45,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
 
         const diagnosisMap = {};
         allDiagnoses.forEach(d => {
+            if (!d || !d.patient) return;
             const pid = d.patient.toString();
             if (!diagnosisMap[pid]) diagnosisMap[pid] = [];
             diagnosisMap[pid].push({
@@ -56,7 +57,8 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
 
         const result = patients.map(p => {
             const pObj = { ...p };
-            const diags = diagnosisMap[p._id.toString()] || [];
+            const pid = p._id ? p._id.toString() : '';
+            const diags = diagnosisMap[pid] || [];
             pObj.diagnosisCount = diags.length;
             pObj.allResultsSaved = diags.length > 0 && diags.every(d => d.hasSavedResults);
             pObj.hasUnsavedResults = diags.length > 0 && diags.some(d => !d.hasSavedResults);
