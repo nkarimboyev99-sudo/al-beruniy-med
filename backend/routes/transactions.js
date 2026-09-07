@@ -36,6 +36,13 @@ async function ensureAccountingSync(creatorId = null) {
                 await Transaction.deleteMany({ $or: deleteQuery });
             }
 
+            let defaultCreatorId = creatorId;
+            if (!defaultCreatorId) {
+                const User = require('../models/User');
+                const adminUser = await User.findOne({ role: 'admin' }).select('_id').lean();
+                if (adminUser) defaultCreatorId = adminUser._id;
+            }
+
             for (const diagnosis of activeDiagnoses) {
                 const amount = getDiagnosisPaymentAmount(diagnosis);
                 if (amount <= 0) {
@@ -45,6 +52,8 @@ async function ensureAccountingSync(creatorId = null) {
 
                 const discountPercent = diagnosis.discountPercent || 0;
                 const discountStr = discountPercent > 0 ? ` (${discountPercent}% chegirma)` : '';
+
+                const createdBy = diagnosis.doctor?._id || diagnosis.doctor || defaultCreatorId;
 
                 await Transaction.findOneAndUpdate(
                     { patientDiagnosis: diagnosis._id },
@@ -58,7 +67,7 @@ async function ensureAccountingSync(creatorId = null) {
                             patientDiagnosis: diagnosis._id,
                             paymentMethod: diagnosis.paymentMethod || 'cash',
                             date: diagnosis.createdAt || new Date(),
-                            createdBy: diagnosis.doctor?._id || diagnosis.doctor || creatorId
+                            ...(createdBy ? { createdBy } : {})
                         }
                     },
                     { upsert: true, setDefaultsOnInsert: true }

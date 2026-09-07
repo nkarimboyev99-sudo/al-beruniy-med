@@ -45,8 +45,8 @@ const isAllowedOrigin = (origin) => {
         const { protocol, hostname } = new URL(origin);
         return (
             allowedOrigins.has(origin) ||
-            (protocol === 'https:' && hostname.endsWith('.vercel.app')) ||
-            (protocol === 'http:' && hostname === 'localhost')
+            (protocol === 'https:' && (hostname === 'al-beruniy-med.vercel.app' || hostname.endsWith('.vercel.app') || hostname.endsWith('.onrender.com'))) ||
+            (protocol === 'http:' && (hostname === 'localhost' || hostname === '127.0.0.1'))
         );
     } catch {
         return false;
@@ -58,8 +58,7 @@ const corsOptions = {
         if (isAllowedOrigin(origin)) {
             return callback(null, true);
         }
-
-        return callback(new Error(`CORS blocked for origin: ${origin}`));
+        return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -67,19 +66,26 @@ const corsOptions = {
     optionsSuccessStatus: 200
 };
 
-app.use((req, res, next) => {
+const applyCorsHeaders = (req, res) => {
     const origin = req.headers.origin;
-
     if (isAllowedOrigin(origin)) {
-        res.header('Access-Control-Allow-Origin', origin || '*');
+        if (origin) {
+            res.header('Access-Control-Allow-Origin', origin);
+        } else {
+            res.header('Access-Control-Allow-Origin', '*');
+        }
         res.header('Vary', 'Origin');
         res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
         res.header(
             'Access-Control-Allow-Headers',
             req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
         );
     }
+};
+
+app.use((req, res, next) => {
+    applyCorsHeaders(req, res);
 
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
@@ -122,12 +128,14 @@ app.get('/api/health', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
+    applyCorsHeaders(req, res);
     res.status(404).json({ error: true, message: 'API resursi topilmadi' });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('❌ Server Xatoligi:', err);
+    applyCorsHeaders(req, res);
     res.status(err.status || 500).json({
         error: true,
         message: err.message || 'Server ichki xatoligi'
