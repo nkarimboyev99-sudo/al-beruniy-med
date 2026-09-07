@@ -21,7 +21,7 @@ async function ensureAccountingSync(creatorId = null) {
             const activeDiagnoses = await PatientDiagnosis.find({
                 isActive: true,
                 patient: { $in: activePatientIds }
-            }).populate('patient', 'fullName').populate('doctor', 'fullName');
+            }).select('patient diagnosisName totalAmount diagnosisPrices discount discountPercent paymentMethod createdAt doctor').lean();
 
             const activeDiagnosisIds = activeDiagnoses.map(d => d._id);
 
@@ -43,35 +43,69 @@ async function ensureAccountingSync(creatorId = null) {
                 if (adminUser) defaultCreatorId = adminUser._id;
             }
 
+            const existingTx = await Transaction.find({
+                patientDiagnosis: { $in: activeDiagnosisIds }
+            }).select('patientDiagnosis amount paymentMethod').lean();
+
+            const existingMap = new Map();
+            existingTx.forEach(tx => {
+                if (tx.patientDiagnosis) {
+                    existingMap.set(tx.patientDiagnosis.toString(), tx);
+                }
+            });
+
+            const bulkOps = [];
+            const toDeleteIds = [];
+
             for (const diagnosis of activeDiagnoses) {
                 const amount = getDiagnosisPaymentAmount(diagnosis);
                 if (amount <= 0) {
-                    await Transaction.deleteMany({ patientDiagnosis: diagnosis._id });
+                    toDeleteIds.push(diagnosis._id);
+                    continue;
+                }
+
+                const existing = existingMap.get(diagnosis._id.toString());
+                const paymentMethod = diagnosis.paymentMethod || 'cash';
+
+                if (existing && existing.amount === amount && existing.paymentMethod === paymentMethod) {
                     continue;
                 }
 
                 const discountPercent = diagnosis.discountPercent || 0;
                 const discountStr = discountPercent > 0 ? ` (${discountPercent}% chegirma)` : '';
-
                 const createdBy = diagnosis.doctor?._id || diagnosis.doctor || defaultCreatorId;
 
-                await Transaction.findOneAndUpdate(
-                    { patientDiagnosis: diagnosis._id },
-                    {
-                        $set: {
-                            type: 'income',
-                            category: 'service',
-                            amount,
-                            description: `Analiz: ${diagnosis.patient?.fullName || ''} - ${diagnosis.diagnosisName || ''}${discountStr}`.trim(),
-                            patient: diagnosis.patient?._id || diagnosis.patient,
-                            patientDiagnosis: diagnosis._id,
-                            paymentMethod: diagnosis.paymentMethod || 'cash',
-                            date: diagnosis.createdAt || new Date(),
-                            ...(createdBy ? { createdBy } : {})
-                        }
-                    },
-                    { upsert: true, setDefaultsOnInsert: true }
-                );
+                bulkOps.push({
+                    updateOne: {
+                        filter: { patientDiagnosis: diagnosis._id },
+                        update: {
+                            $set: {
+                                type: 'income',
+                                category: 'service',
+                                amount,
+                                description: `Analiz: ${diagnosis.diagnosisName || ''}${discountStr}`.trim(),
+                                patient: diagnosis.patient,
+                                patientDiagnosis: diagnosis._id,
+                                paymentMethod,
+                                date: diagnosis.createdAt || new Date(),
+                                ...(createdBy ? { createdBy } : {})
+                            }
+                        },
+                        upsert: true
+                    }
+                });
+            }
+
+            if (toDeleteIds.length > 0) {
+                bulkOps.push({
+                    deleteMany: {
+                        filter: { patientDiagnosis: { $in: toDeleteIds } }
+                    }
+                });
+            }
+
+            if (bulkOps.length > 0) {
+                await Transaction.bulkWrite(bulkOps);
             }
 
             accountingSyncDone = true;
@@ -93,7 +127,8 @@ async function buildAccountingEntries(filter, creatorId = null) {
         .populate('patientDiagnosis', 'diagnosisName totalAmount diagnosisPrices discount discountPercent paymentMethod createdAt')
         .populate('medicine', 'name')
         .populate('createdBy', 'fullName')
-        .sort({ date: -1 });
+        .sort({ date: -1 })
+        .lean();
 }
 // Get all transactions
 router.get('/', auth, adminOnly, async (req, res) => {

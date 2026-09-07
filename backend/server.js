@@ -55,10 +55,10 @@ const isAllowedOrigin = (origin) => {
 
 const corsOptions = {
     origin: (origin, callback) => {
-        if (isAllowedOrigin(origin)) {
+        if (!origin || isAllowedOrigin(origin)) {
             return callback(null, true);
         }
-        return callback(null, false);
+        return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -66,26 +66,15 @@ const corsOptions = {
     optionsSuccessStatus: 200
 };
 
-const applyCorsHeaders = (req, res) => {
-    const origin = req.headers.origin;
-    if (isAllowedOrigin(origin)) {
-        if (origin) {
-            res.header('Access-Control-Allow-Origin', origin);
-        } else {
-            res.header('Access-Control-Allow-Origin', '*');
-        }
-        res.header('Vary', 'Origin');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-        res.header(
-            'Access-Control-Allow-Headers',
-            req.headers['access-control-request-headers'] || 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
-        );
-    }
-};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use((req, res, next) => {
-    applyCorsHeaders(req, res);
+    const origin = req.headers.origin;
+    if (origin) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
 
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
@@ -93,9 +82,6 @@ app.use((req, res, next) => {
 
     return next();
 });
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Static files for uploads
@@ -128,14 +114,20 @@ app.get('/api/health', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-    applyCorsHeaders(req, res);
+    if (req.headers.origin) {
+        res.header('Access-Control-Allow-Origin', req.headers.origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
     res.status(404).json({ error: true, message: 'API resursi topilmadi' });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('❌ Server Xatoligi:', err);
-    applyCorsHeaders(req, res);
+    if (req.headers.origin) {
+        res.header('Access-Control-Allow-Origin', req.headers.origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
     res.status(err.status || 500).json({
         error: true,
         message: err.message || 'Server ichki xatoligi'
