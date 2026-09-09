@@ -11,6 +11,47 @@ const router = express.Router();
 const PatientDiagnosis = require('../models/PatientDiagnosis');
 let accountingSyncPromise = null;
 
+async function cleanupDuplicatePatients() {
+    try {
+        const patients = await Patient.find({}).sort({ createdAt: 1 }).lean();
+        const grouped = new Map();
+
+        for (const p of patients) {
+            const normName = (p.fullName || '').trim().toLowerCase();
+            const phone = (p.phone || '').trim();
+            const dateStr = p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : '';
+            const key = phone ? `${normName}:${phone}:${dateStr}` : `${normName}:${dateStr}`;
+
+            if (!grouped.has(key)) {
+                grouped.set(key, []);
+            }
+            grouped.get(key).push(p);
+        }
+
+        for (const list of grouped.values()) {
+            if (list.length < 2) continue;
+            const primaryId = list[0]._id;
+            const duplicateIds = list.slice(1).map(p => p._id);
+
+            console.log(`🧹 Merging ${duplicateIds.length} duplicate Patient records into primary ${primaryId}...`);
+
+            await PatientDiagnosis.updateMany(
+                { patient: { $in: duplicateIds } },
+                { $set: { patient: primaryId } }
+            );
+
+            await Transaction.updateMany(
+                { patient: { $in: duplicateIds } },
+                { $set: { patient: primaryId } }
+            );
+
+            await Patient.deleteMany({ _id: { $in: duplicateIds } });
+        }
+    } catch (e) {
+        console.error('Error in cleanupDuplicatePatients:', e);
+    }
+}
+
 async function cleanupDuplicateDiagnoses() {
     try {
         const activeDiagnoses = await PatientDiagnosis.find({ isActive: true }).sort({ createdAt: 1 }).lean();
@@ -116,6 +157,7 @@ async function ensureAccountingSync(creatorId = null) {
     if (accountingSyncPromise) return accountingSyncPromise;
 
     accountingSyncPromise = (async () => {
+        await cleanupDuplicatePatients();
         await cleanupDuplicateDiagnoses();
 
         const activePatientIds = await Patient.distinct('_id');
@@ -385,6 +427,19 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
 
         res.json({ message: 'Tranzaksiya o\'chirildi' });
     } catch (error) {
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Manual cleanup endpoint for duplicate patients, diagnoses & transactions
+router.post('/cleanup-duplicates', auth, adminOnly, async (req, res) => {
+    try {
+        await cleanupDuplicatePatients();
+        await cleanupDuplicateDiagnoses();
+        await ensureAccountingSync(req.user._id);
+        res.json({ message: 'Keraksiz takroriy bemorlar va unga bog\'liq tranzaksiyalar muvaffaqiyatli tozalandi.' });
+    } catch (error) {
+        console.error('Cleanup duplicates error:', error);
         res.status(500).json({ message: 'Server xatosi' });
     }
 });
