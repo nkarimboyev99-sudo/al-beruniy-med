@@ -575,6 +575,30 @@ router.post('/', auth, doctorOrAdmin, async (req, res) => {
             paymentMethod
         } = req.body;
 
+        // Duplikat tekshiruv: 2 daqiqa ichida bir xil bemor va bir xil analiz yaratilgan bo'lsa
+        if (patient && diagnosisName) {
+            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+            const existingRecent = await PatientDiagnosis.findOne({
+                patient,
+                diagnosisName,
+                createdAt: { $gte: twoMinutesAgo },
+                isActive: true
+            });
+
+            if (existingRecent) {
+                const populatedExisting = await PatientDiagnosis.findById(existingRecent._id)
+                    .populate('patient')
+                    .populate({ path: 'diagnosis', populate: { path: 'category', select: 'name price hideAnalyses' } })
+                    .populate('doctor', 'fullName username')
+                    .populate('medicines.medicine', 'name');
+                const normPrices = await normalizeDiagnosisPrices(populatedExisting);
+                return res.status(200).json(normalizeDiagnosisPaymentSnapshot({
+                    ...populatedExisting.toObject(),
+                    diagnosisPrices: normPrices
+                }));
+            }
+        }
+
         await backfillTodayDailyNumbers();
         const dailyNumber = await getNextDailyNumber();
 

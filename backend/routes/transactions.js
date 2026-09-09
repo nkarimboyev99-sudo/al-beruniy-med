@@ -12,7 +12,48 @@ const PatientDiagnosis = require('../models/PatientDiagnosis');
 let accountingSyncPromise = null;
 let accountingSyncDone = false;
 
+async function cleanupDuplicateDiagnoses() {
+    try {
+        const activeDiagnoses = await PatientDiagnosis.find({ isActive: true }).sort({ createdAt: 1 }).lean();
+        const grouped = new Map();
+
+        for (const diag of activeDiagnoses) {
+            const pid = diag.patient ? diag.patient.toString() : '';
+            const name = (diag.diagnosisName || '').trim().toLowerCase();
+            const key = `${pid}:${name}:${diag.totalAmount || 0}`;
+            if (!grouped.has(key)) {
+                grouped.set(key, []);
+            }
+            grouped.get(key).push(diag);
+        }
+
+        const duplicateIds = [];
+        for (const list of grouped.values()) {
+            if (list.length < 2) continue;
+            const firstTime = new Date(list[0].createdAt || 0).getTime();
+            for (let i = 1; i < list.length; i++) {
+                const itemTime = new Date(list[i].createdAt || 0).getTime();
+                if (Math.abs(itemTime - firstTime) <= 5 * 60 * 1000) {
+                    duplicateIds.push(list[i]._id);
+                }
+            }
+        }
+
+        if (duplicateIds.length > 0) {
+            console.log(`🧹 Cleaning up ${duplicateIds.length} duplicate PatientDiagnosis entries...`);
+            await PatientDiagnosis.updateMany(
+                { _id: { $in: duplicateIds } },
+                { $set: { isActive: false } }
+            );
+            await Transaction.deleteMany({ patientDiagnosis: { $in: duplicateIds } });
+        }
+    } catch (e) {
+        console.error('Error cleaning up duplicate diagnoses:', e);
+    }
+}
+
 async function ensureAccountingSync(creatorId = null) {
+    await cleanupDuplicateDiagnoses();
     if (accountingSyncDone && !accountingSyncPromise) return;
     if (!accountingSyncPromise) {
         accountingSyncPromise = (async () => {
