@@ -18,33 +18,72 @@ async function cleanupDuplicateDiagnoses() {
 
         for (const diag of activeDiagnoses) {
             const pid = diag.patient ? diag.patient.toString() : '';
-            const name = (diag.diagnosisName || '').trim().toLowerCase();
+            const rawName = diag.diagnosisName || '';
+            const normalizedName = rawName.replace(/^Analiz:\s*/i, '').trim().toLowerCase();
             const dateStr = diag.createdAt ? new Date(diag.createdAt).toISOString().split('T')[0] : '';
-            const key = `${pid}:${name}:${diag.totalAmount || 0}:${dateStr}`;
+            const amount = diag.totalAmount || 0;
+            const key = `${pid}:${normalizedName}:${amount}:${dateStr}`;
+
             if (!grouped.has(key)) {
                 grouped.set(key, []);
             }
             grouped.get(key).push(diag);
         }
 
-        const duplicateIds = [];
+        const duplicateDiagnosisIds = [];
         for (const list of grouped.values()) {
             if (list.length < 2) continue;
             for (let i = 1; i < list.length; i++) {
-                duplicateIds.push(list[i]._id);
+                duplicateDiagnosisIds.push(list[i]._id);
             }
         }
 
-        if (duplicateIds.length > 0) {
-            console.log(`🧹 Cleaning up ${duplicateIds.length} duplicate PatientDiagnosis entries...`);
+        if (duplicateDiagnosisIds.length > 0) {
+            console.log(`🧹 Cleaning up ${duplicateDiagnosisIds.length} duplicate PatientDiagnosis entries...`);
             await PatientDiagnosis.updateMany(
-                { _id: { $in: duplicateIds } },
+                { _id: { $in: duplicateDiagnosisIds } },
                 { $set: { isActive: false } }
             );
-            await Transaction.deleteMany({ patientDiagnosis: { $in: duplicateIds } });
+            await Transaction.deleteMany({ patientDiagnosis: { $in: duplicateDiagnosisIds } });
+        }
+
+        const incomeTx = await Transaction.find({ type: 'income' }).sort({ date: 1 }).lean();
+        const txGrouped = new Map();
+
+        for (const tx of incomeTx) {
+            const pid = tx.patient ? tx.patient.toString() : '';
+            const desc = (tx.description || '').replace(/^Analiz:\s*/i, '').trim().toLowerCase();
+            const dateStr = tx.date ? new Date(tx.date).toISOString().split('T')[0] : '';
+            const pdId = tx.patientDiagnosis ? tx.patientDiagnosis.toString() : '';
+            const amount = tx.amount || 0;
+
+            let key = '';
+            if (pdId) {
+                key = `pd:${pdId}`;
+            } else {
+                key = `raw:${pid}:${desc}:${amount}:${dateStr}:${tx.paymentMethod || 'cash'}`;
+            }
+
+            if (!txGrouped.has(key)) {
+                txGrouped.set(key, []);
+            }
+            txGrouped.get(key).push(tx);
+        }
+
+        const duplicateTxIds = [];
+        for (const list of txGrouped.values()) {
+            if (list.length < 2) continue;
+            for (let i = 1; i < list.length; i++) {
+                duplicateTxIds.push(list[i]._id);
+            }
+        }
+
+        if (duplicateTxIds.length > 0) {
+            console.log(`🧹 Cleaning up ${duplicateTxIds.length} duplicate Transaction entries...`);
+            await Transaction.deleteMany({ _id: { $in: duplicateTxIds } });
         }
     } catch (e) {
-        console.error('Error cleaning up duplicate diagnoses:', e);
+        console.error('Error cleaning up duplicate diagnoses/transactions:', e);
     }
 }
 
@@ -60,7 +99,7 @@ function deduplicateTransactions(transactions) {
         } else {
             const pid = t.patient ? (t.patient._id ? t.patient._id.toString() : t.patient.toString()) : '';
             const dateStr = t.date ? new Date(t.date).toISOString().split('T')[0] : '';
-            const desc = (t.description || '').trim().toLowerCase();
+            const desc = (t.description || '').replace(/^Analiz:\s*/i, '').trim().toLowerCase();
             key = `raw:${pid}:${desc}:${t.amount}:${dateStr}:${t.type}:${t.paymentMethod}`;
         }
 
@@ -78,109 +117,104 @@ async function ensureAccountingSync(creatorId = null) {
 
     accountingSyncPromise = (async () => {
         await cleanupDuplicateDiagnoses();
+
         const activePatientIds = await Patient.distinct('_id');
-    if (!accountingSyncPromise) {
-        accountingSyncPromise = (async () => {
-            const activePatientIds = await Patient.distinct('_id');
 
-            const activeDiagnoses = await PatientDiagnosis.find({
-                isActive: true,
-                patient: { $in: activePatientIds }
-            }).select('patient diagnosisName totalAmount diagnosisPrices discount discountPercent paymentMethod createdAt doctor').lean();
+        const activeDiagnoses = await PatientDiagnosis.find({
+            isActive: true,
+            patient: { $in: activePatientIds }
+        }).select('patient diagnosisName totalAmount diagnosisPrices discount discountPercent paymentMethod createdAt doctor').lean();
 
-            const activeDiagnosisIds = activeDiagnoses.map(d => d._id);
+        const activeDiagnosisIds = activeDiagnoses.map(d => d._id);
 
-            const deleteQuery = [];
-            if (activePatientIds.length > 0) {
-                deleteQuery.push({ patient: { $exists: true, $ne: null, $nin: activePatientIds } });
+        const deleteQuery = [];
+        if (activePatientIds.length > 0) {
+            deleteQuery.push({ patient: { $exists: true, $ne: null, $nin: activePatientIds } });
+        }
+        if (activeDiagnosisIds.length > 0) {
+            deleteQuery.push({ patientDiagnosis: { $exists: true, $ne: null, $nin: activeDiagnosisIds } });
+        }
+        if (deleteQuery.length > 0) {
+            await Transaction.deleteMany({ $or: deleteQuery });
+        }
+
+        let defaultCreatorId = creatorId;
+        if (!defaultCreatorId) {
+            const User = require('../models/User');
+            const adminUser = await User.findOne({ role: 'admin' }).select('_id').lean();
+            if (adminUser) defaultCreatorId = adminUser._id;
+        }
+
+        const existingTx = await Transaction.find({
+            patientDiagnosis: { $in: activeDiagnosisIds }
+        }).select('patientDiagnosis amount paymentMethod').lean();
+
+        const existingMap = new Map();
+        existingTx.forEach(tx => {
+            if (tx.patientDiagnosis) {
+                existingMap.set(tx.patientDiagnosis.toString(), tx);
             }
-            if (activeDiagnosisIds.length > 0) {
-                deleteQuery.push({ patientDiagnosis: { $exists: true, $ne: null, $nin: activeDiagnosisIds } });
-            }
-            if (deleteQuery.length > 0) {
-                await Transaction.deleteMany({ $or: deleteQuery });
-            }
+        });
 
-            let defaultCreatorId = creatorId;
-            if (!defaultCreatorId) {
-                const User = require('../models/User');
-                const adminUser = await User.findOne({ role: 'admin' }).select('_id').lean();
-                if (adminUser) defaultCreatorId = adminUser._id;
+        const bulkOps = [];
+        const toDeleteIds = [];
+
+        for (const diagnosis of activeDiagnoses) {
+            const amount = getDiagnosisPaymentAmount(diagnosis);
+            if (amount <= 0) {
+                toDeleteIds.push(diagnosis._id);
+                continue;
             }
 
-            const existingTx = await Transaction.find({
-                patientDiagnosis: { $in: activeDiagnosisIds }
-            }).select('patientDiagnosis amount paymentMethod').lean();
+            const existing = existingMap.get(diagnosis._id.toString());
+            const paymentMethod = diagnosis.paymentMethod || 'cash';
 
-            const existingMap = new Map();
-            existingTx.forEach(tx => {
-                if (tx.patientDiagnosis) {
-                    existingMap.set(tx.patientDiagnosis.toString(), tx);
+            if (existing && existing.amount === amount && existing.paymentMethod === paymentMethod) {
+                continue;
+            }
+
+            const discountPercent = diagnosis.discountPercent || 0;
+            const discountStr = discountPercent > 0 ? ` (${discountPercent}% chegirma)` : '';
+            const createdBy = diagnosis.doctor?._id || diagnosis.doctor || defaultCreatorId;
+
+            bulkOps.push({
+                updateOne: {
+                    filter: { patientDiagnosis: diagnosis._id },
+                    update: {
+                        $set: {
+                            type: 'income',
+                            category: 'service',
+                            amount,
+                            description: `Analiz: ${diagnosis.diagnosisName || ''}${discountStr}`.trim(),
+                            patient: diagnosis.patient,
+                            patientDiagnosis: diagnosis._id,
+                            paymentMethod,
+                            date: diagnosis.createdAt || new Date(),
+                            ...(createdBy ? { createdBy } : {})
+                        }
+                    },
+                    upsert: true
                 }
             });
+        }
 
-            const bulkOps = [];
-            const toDeleteIds = [];
-
-            for (const diagnosis of activeDiagnoses) {
-                const amount = getDiagnosisPaymentAmount(diagnosis);
-                if (amount <= 0) {
-                    toDeleteIds.push(diagnosis._id);
-                    continue;
+        if (toDeleteIds.length > 0) {
+            bulkOps.push({
+                deleteMany: {
+                    filter: { patientDiagnosis: { $in: toDeleteIds } }
                 }
+            });
+        }
 
-                const existing = existingMap.get(diagnosis._id.toString());
-                const paymentMethod = diagnosis.paymentMethod || 'cash';
+        if (bulkOps.length > 0) {
+            await Transaction.bulkWrite(bulkOps);
+        }
+    })().catch(err => {
+        console.error('Accounting sync error:', err);
+    }).finally(() => {
+        accountingSyncPromise = null;
+    });
 
-                if (existing && existing.amount === amount && existing.paymentMethod === paymentMethod) {
-                    continue;
-                }
-
-                const discountPercent = diagnosis.discountPercent || 0;
-                const discountStr = discountPercent > 0 ? ` (${discountPercent}% chegirma)` : '';
-                const createdBy = diagnosis.doctor?._id || diagnosis.doctor || defaultCreatorId;
-
-                bulkOps.push({
-                    updateOne: {
-                        filter: { patientDiagnosis: diagnosis._id },
-                        update: {
-                            $set: {
-                                type: 'income',
-                                category: 'service',
-                                amount,
-                                description: `Analiz: ${diagnosis.diagnosisName || ''}${discountStr}`.trim(),
-                                patient: diagnosis.patient,
-                                patientDiagnosis: diagnosis._id,
-                                paymentMethod,
-                                date: diagnosis.createdAt || new Date(),
-                                ...(createdBy ? { createdBy } : {})
-                            }
-                        },
-                        upsert: true
-                    }
-                });
-            }
-
-            if (toDeleteIds.length > 0) {
-                bulkOps.push({
-                    deleteMany: {
-                        filter: { patientDiagnosis: { $in: toDeleteIds } }
-                    }
-                });
-            }
-
-            if (bulkOps.length > 0) {
-                await Transaction.bulkWrite(bulkOps);
-            }
-
-            accountingSyncDone = true;
-        })().catch(err => {
-            accountingSyncDone = false;
-            console.error('Accounting sync error:', err);
-        }).finally(() => {
-            accountingSyncPromise = null;
-        });
-    }
     return accountingSyncPromise;
 }
 
