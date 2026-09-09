@@ -27,6 +27,22 @@ const syncReferringDoctor = async (name) => {
 
 const { backfillTodayDailyNumbers } = require('../utils/dailyNumber');
 
+const deduplicatePatients = (patientList) => {
+    const seen = new Set();
+    const result = [];
+    patientList.forEach(p => {
+        const normName = (p.fullName || '').trim().toLowerCase();
+        const phone = (p.phone || '').trim();
+        const dateStr = p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : '';
+        const key = phone ? `${normName}:${phone}:${dateStr}` : `${normName}:${dateStr}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            result.push(p);
+        }
+    });
+    return result;
+};
+
 // Get all patients
 router.get('/', auth, doctorOrAdmin, async (req, res) => {
     try {
@@ -81,7 +97,7 @@ router.get('/', auth, doctorOrAdmin, async (req, res) => {
             return pObj;
         });
 
-        res.json(result);
+        res.json(deduplicatePatients(result));
     } catch (error) {
         res.status(500).json({ message: 'Server xatosi' });
     }

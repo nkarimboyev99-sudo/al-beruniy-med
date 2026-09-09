@@ -10,7 +10,6 @@ const router = express.Router();
 
 const PatientDiagnosis = require('../models/PatientDiagnosis');
 let accountingSyncPromise = null;
-let accountingSyncDone = false;
 
 async function cleanupDuplicateDiagnoses() {
     try {
@@ -20,7 +19,8 @@ async function cleanupDuplicateDiagnoses() {
         for (const diag of activeDiagnoses) {
             const pid = diag.patient ? diag.patient.toString() : '';
             const name = (diag.diagnosisName || '').trim().toLowerCase();
-            const key = `${pid}:${name}:${diag.totalAmount || 0}`;
+            const dateStr = diag.createdAt ? new Date(diag.createdAt).toISOString().split('T')[0] : '';
+            const key = `${pid}:${name}:${diag.totalAmount || 0}:${dateStr}`;
             if (!grouped.has(key)) {
                 grouped.set(key, []);
             }
@@ -30,12 +30,8 @@ async function cleanupDuplicateDiagnoses() {
         const duplicateIds = [];
         for (const list of grouped.values()) {
             if (list.length < 2) continue;
-            const firstTime = new Date(list[0].createdAt || 0).getTime();
             for (let i = 1; i < list.length; i++) {
-                const itemTime = new Date(list[i].createdAt || 0).getTime();
-                if (Math.abs(itemTime - firstTime) <= 5 * 60 * 1000) {
-                    duplicateIds.push(list[i]._id);
-                }
+                duplicateIds.push(list[i]._id);
             }
         }
 
@@ -52,9 +48,37 @@ async function cleanupDuplicateDiagnoses() {
     }
 }
 
+function deduplicateTransactions(transactions) {
+    const seen = new Set();
+    const result = [];
+
+    for (const t of transactions) {
+        let key = '';
+        if (t.patientDiagnosis) {
+            const pdId = t.patientDiagnosis._id ? t.patientDiagnosis._id.toString() : t.patientDiagnosis.toString();
+            key = `pd:${pdId}`;
+        } else {
+            const pid = t.patient ? (t.patient._id ? t.patient._id.toString() : t.patient.toString()) : '';
+            const dateStr = t.date ? new Date(t.date).toISOString().split('T')[0] : '';
+            const desc = (t.description || '').trim().toLowerCase();
+            key = `raw:${pid}:${desc}:${t.amount}:${dateStr}:${t.type}:${t.paymentMethod}`;
+        }
+
+        if (!seen.has(key)) {
+            seen.add(key);
+            result.push(t);
+        }
+    }
+
+    return result;
+}
+
 async function ensureAccountingSync(creatorId = null) {
-    await cleanupDuplicateDiagnoses();
-    if (accountingSyncDone && !accountingSyncPromise) return;
+    if (accountingSyncPromise) return accountingSyncPromise;
+
+    accountingSyncPromise = (async () => {
+        await cleanupDuplicateDiagnoses();
+        const activePatientIds = await Patient.distinct('_id');
     if (!accountingSyncPromise) {
         accountingSyncPromise = (async () => {
             const activePatientIds = await Patient.distinct('_id');
@@ -163,13 +187,15 @@ async function ensureAccountingSync(creatorId = null) {
 async function buildAccountingEntries(filter, creatorId = null) {
     await ensureAccountingSync(creatorId);
 
-    return Transaction.find(filter)
+    const transactions = await Transaction.find(filter)
         .populate('patient', 'fullName')
         .populate('patientDiagnosis', 'diagnosisName totalAmount diagnosisPrices discount discountPercent paymentMethod createdAt')
         .populate('medicine', 'name')
         .populate('createdBy', 'fullName')
         .sort({ date: -1 })
         .lean();
+
+    return deduplicateTransactions(transactions);
 }
 // Get all transactions
 router.get('/', auth, adminOnly, async (req, res) => {
