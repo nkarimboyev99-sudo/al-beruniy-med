@@ -42,6 +42,10 @@ function Accounting() {
     const [editError, setEditError] = useState('')
     const [editSuccess, setEditSuccess] = useState('')
 
+    const [selectedIds, setSelectedIds] = useState([])
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+    const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false)
+
     useEffect(() => { fetchTransactions() }, [])
 
     const fetchTransactions = async () => {
@@ -132,6 +136,46 @@ function Accounting() {
             alert('Server bilan aloqa yo\'q')
         } finally {
             setDeleteLoading(false)
+        }
+    }
+
+    const toggleSelectAll = () => {
+        const pageIds = paginatedTransactions.map(t => t._id)
+        const allSelected = pageIds.length > 0 && pageIds.every(id => selectedIds.includes(id))
+        if (allSelected) {
+            setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)))
+        } else {
+            setSelectedIds(prev => Array.from(new Set([...prev, ...pageIds])))
+        }
+    }
+
+    const toggleSelectOne = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+        )
+    }
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return
+        setBulkDeleteLoading(true)
+        try {
+            const response = await apiFetch('/api/transactions/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: selectedIds })
+            })
+            if (response.ok) {
+                setSelectedIds([])
+                setShowBulkDeleteModal(false)
+                fetchTransactions()
+            } else {
+                const data = await response.json().catch(() => ({}))
+                alert(data.message || 'Tranzaksiyalarni o\'chirishda xatolik')
+            }
+        } catch (err) {
+            alert('Server bilan aloqa yo\'q')
+        } finally {
+            setBulkDeleteLoading(false)
         }
     }
 
@@ -578,7 +622,7 @@ function Accounting() {
             {viewMode === 'table' && (
                 <div className="trans-content">
                     {/* Toolbar */}
-                    <div className="toolbar" style={{ marginBottom: 0 }}>
+                    <div className="toolbar" style={{ marginBottom: 0, gap: 12, flexWrap: 'wrap' }}>
                         <div className="search-input">
                             <Search size={18} />
                             <input
@@ -602,7 +646,31 @@ function Accounting() {
                                 <ArrowDownRight size={14} /> Xarajat
                             </button>
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500 }}>
+
+                        {selectedIds.length > 0 && (
+                            <button
+                                className="btn btn-danger"
+                                onClick={() => setShowBulkDeleteModal(true)}
+                                style={{
+                                    background: '#ef4444',
+                                    color: '#fff',
+                                    border: 'none',
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontWeight: 600,
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                <Trash2 size={16} /> Tanlanganlarni o'chirish ({selectedIds.length})
+                            </button>
+                        )}
+
+                        <div style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, marginLeft: 'auto' }}>
+                            {selectedIds.length > 0 && <span style={{ color: '#ef4444', fontWeight: 700, marginRight: 8 }}>Tanlangan: {selectedIds.length} ta |</span>}
                             Jami: <b style={{ color: '#111827' }}>{filteredTransactions.length}</b> ta
                         </div>
                     </div>
@@ -654,6 +722,15 @@ function Accounting() {
                             <table className="data-table">
                                 <thead>
                                     <tr>
+                                        <th style={{ width: 40, textAlign: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={paginatedTransactions.length > 0 && paginatedTransactions.every(t => selectedIds.includes(t._id))}
+                                                onChange={toggleSelectAll}
+                                                style={{ cursor: 'pointer', width: 16, height: 16, accentColor: '#2563eb' }}
+                                                title="Barchasini tanlash / bekor qilish"
+                                            />
+                                        </th>
                                         <th>#</th>
                                         <th>Sana</th>
                                         <th>Turi</th>
@@ -665,54 +742,65 @@ function Accounting() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {paginatedTransactions.map((t, idx) => (
-                                        <tr key={t._id}>
-                                            <td style={{ color: '#9ca3af', fontWeight: 500 }}>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                                            <td style={{ whiteSpace: 'nowrap' }}>
-                                                {new Date(t.date).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                            </td>
-                                            <td>
-                                                <span className={`type-badge ${t.type}`}>
-                                                    {t.type === 'income' ? 'Daromad' : 'Xarajat'}
-                                                </span>
-                                            </td>
-                                            <td>{getCategoryLabel(t.category)}</td>
-                                            <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={t.description}>
-                                                {t.description || <span style={{ color: '#9ca3af' }}>—</span>}
-                                            </td>
-                                            <td>
-                                                <span className="payment-badge">
-                                                    {t.paymentMethod === 'cash' && <Banknote size={13} />}
-                                                    {t.paymentMethod === 'card' && <CreditCard size={13} />}
-                                                    {t.paymentMethod === 'transfer' && <ArrowUpRight size={13} />}
-                                                    {getPaymentLabel(t.paymentMethod)}
-                                                </span>
-                                            </td>
-                                            <td className={t.type} style={{ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                                                {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-                                                    <button
-                                                        className="action-btn edit"
-                                                        title="Tahrirlash"
-                                                        onClick={() => openEditModal(t)}
-                                                        style={{ padding: '5px 8px', borderRadius: 7 }}
-                                                    >
-                                                        <Edit2 size={14} />
-                                                    </button>
-                                                    <button
-                                                        className="action-btn delete"
-                                                        title="O'chirish"
-                                                        onClick={() => openDeleteModal(t)}
-                                                        style={{ padding: '5px 8px', borderRadius: 7 }}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {paginatedTransactions.map((t, idx) => {
+                                        const isSelected = selectedIds.includes(t._id);
+                                        return (
+                                            <tr key={t._id} style={{ background: isSelected ? '#eff6ff' : undefined }}>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => toggleSelectOne(t._id)}
+                                                        style={{ cursor: 'pointer', width: 16, height: 16, accentColor: '#2563eb' }}
+                                                    />
+                                                </td>
+                                                <td style={{ color: '#9ca3af', fontWeight: 500 }}>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                                                <td style={{ whiteSpace: 'nowrap' }}>
+                                                    {new Date(t.date).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                </td>
+                                                <td>
+                                                    <span className={`type-badge ${t.type}`}>
+                                                        {t.type === 'income' ? 'Daromad' : 'Xarajat'}
+                                                    </span>
+                                                </td>
+                                                <td>{getCategoryLabel(t.category)}</td>
+                                                <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={t.description}>
+                                                    {t.description || <span style={{ color: '#9ca3af' }}>—</span>}
+                                                </td>
+                                                <td>
+                                                    <span className="payment-badge">
+                                                        {t.paymentMethod === 'cash' && <Banknote size={13} />}
+                                                        {t.paymentMethod === 'card' && <CreditCard size={13} />}
+                                                        {t.paymentMethod === 'transfer' && <ArrowUpRight size={13} />}
+                                                        {getPaymentLabel(t.paymentMethod)}
+                                                    </span>
+                                                </td>
+                                                <td className={t.type} style={{ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                                                    {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                                                        <button
+                                                            className="action-btn edit"
+                                                            title="Tahrirlash"
+                                                            onClick={() => openEditModal(t)}
+                                                            style={{ padding: '5px 8px', borderRadius: 7 }}
+                                                        >
+                                                            <Edit2 size={14} />
+                                                        </button>
+                                                        <button
+                                                            className="action-btn delete"
+                                                            title="O'chirish"
+                                                            onClick={() => openDeleteModal(t)}
+                                                            style={{ padding: '5px 8px', borderRadius: 7 }}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
 
@@ -857,6 +945,39 @@ function Accounting() {
                                 disabled={deleteLoading}
                             >
                                 {deleteLoading ? 'O\'chirilmoqda...' : <><Trash2 size={16} /> Ha, o'chirish</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* === KO'PLAB O'CHIRISH TASDIQLASH MODAL === */}
+            {showBulkDeleteModal && (
+                <div className="modal-overlay" onClick={() => setShowBulkDeleteModal(false)}>
+                    <div className="modal" style={{ maxWidth: 440 }} onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <AlertTriangle size={22} /> Tanlanganlarni o'chirish
+                            </h2>
+                            <button className="modal-close" onClick={() => setShowBulkDeleteModal(false)}><X size={24} /></button>
+                        </div>
+                        <div style={{ marginBottom: 20, color: '#374151', fontSize: '0.95rem' }}>
+                            <p style={{ margin: '0 0 12px', fontWeight: 600 }}>
+                                Haqiqatan ham tanlangan <b style={{ color: '#dc2626' }}>{selectedIds.length} ta</b> bemor/tranzaksiyani o'chirib yubormoqchimisiz?
+                            </p>
+                            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.85rem' }}>
+                                Ushbu yozuvlar va ularga bog'liq diagnostika natijalari bazadan va hisob-kitob bo'limidan butunlay o'chiriladi va qaytib chiqmaydi.
+                            </p>
+                        </div>
+                        <div className="modal-actions">
+                            <button className="btn btn-secondary" onClick={() => setShowBulkDeleteModal(false)} disabled={bulkDeleteLoading}>Bekor qilish</button>
+                            <button
+                                className="btn"
+                                style={{ background: '#dc2626', color: '#fff' }}
+                                onClick={handleBulkDelete}
+                                disabled={bulkDeleteLoading}
+                            >
+                                {bulkDeleteLoading ? 'O\'chirilmoqda...' : <><Trash2 size={16} /> Ha, tanlanganlarni o'chirish</>}
                             </button>
                         </div>
                     </div>

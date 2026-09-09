@@ -425,8 +425,39 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
             return res.status(404).json({ message: 'Tranzaksiya topilmadi' });
         }
 
+        if (transaction.patientDiagnosis) {
+            await PatientDiagnosis.findByIdAndUpdate(transaction.patientDiagnosis, { isActive: false });
+        }
+
         res.json({ message: 'Tranzaksiya o\'chirildi' });
     } catch (error) {
+        res.status(500).json({ message: 'Server xatosi' });
+    }
+});
+
+// Bulk delete transactions
+router.post('/bulk-delete', auth, adminOnly, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'O\'chirish uchun tranzaksiyalar tanlanmagan' });
+        }
+
+        const transactions = await Transaction.find({ _id: { $in: ids } }).select('patientDiagnosis').lean();
+        const pdIds = transactions.filter(t => t.patientDiagnosis).map(t => t.patientDiagnosis);
+
+        if (pdIds.length > 0) {
+            await PatientDiagnosis.updateMany(
+                { _id: { $in: pdIds } },
+                { $set: { isActive: false } }
+            );
+        }
+
+        await Transaction.deleteMany({ _id: { $in: ids } });
+
+        res.json({ message: `${ids.length} ta tranzaksiya o'chirildi` });
+    } catch (error) {
+        console.error('Bulk delete error:', error);
         res.status(500).json({ message: 'Server xatosi' });
     }
 });
