@@ -9,6 +9,7 @@ import {
     UserPlus,
     Calendar
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -25,15 +26,13 @@ function Dashboard() {
 
     const fetchStats = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const headers = { 'Authorization': `Bearer ${token}` }
             const user = JSON.parse(localStorage.getItem('user') || '{}')
             const isAdmin = user.role === 'admin'
 
             const requests = [
-                isAdmin ? fetch('/api/auth/users', { headers }).catch(() => ({ ok: false })) : Promise.resolve({ ok: false }),
-                fetch('/api/diagnoses', { headers }).catch(() => ({ ok: false })),
-                fetch('/api/patients', { headers }).catch(() => ({ ok: false }))
+                isAdmin ? apiFetch('/api/auth/users').catch(() => ({ ok: false })) : Promise.resolve({ ok: false }),
+                apiFetch('/api/diagnoses').catch(() => ({ ok: false })),
+                apiFetch('/api/patients').catch(() => ({ ok: false }))
             ]
 
             const [usersRes, diagnosesRes, patientsRes] = await Promise.all(requests)

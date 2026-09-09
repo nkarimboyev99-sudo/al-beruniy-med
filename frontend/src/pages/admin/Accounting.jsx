@@ -8,6 +8,7 @@ import {
     Banknote, ChevronLeft, ChevronRight, Download, Clock,
     Edit2, Trash2, AlertTriangle, Table2, BarChart2
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DataManagement.css'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler)
@@ -45,8 +46,7 @@ function Accounting() {
 
     const fetchTransactions = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/transactions', { headers: { 'Authorization': `Bearer ${token}` } })
+            const response = await apiFetch('/api/transactions')
             if (response.ok) {
                 setTransactions(await response.json())
             } else {
@@ -60,10 +60,9 @@ function Accounting() {
     const handleSubmit = async (e) => {
         e.preventDefault(); setError(''); setSuccess('')
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/transactions', {
+            const response = await apiFetch('/api/transactions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...formData, amount: parseFloat(formData.amount) })
             })
             const data = await response.json()
@@ -95,10 +94,9 @@ function Accounting() {
         e.preventDefault(); setEditError(''); setEditSuccess('')
         if (!editingTransaction) return
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch(`/api/transactions/${editingTransaction._id}`, {
+            const response = await apiFetch(`/api/transactions/${editingTransaction._id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...editFormData, amount: parseFloat(editFormData.amount) })
             })
             const data = await response.json()
@@ -119,10 +117,8 @@ function Accounting() {
         if (!deletingTransaction) return
         setDeleteLoading(true)
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch(`/api/transactions/${deletingTransaction._id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await apiFetch(`/api/transactions/${deletingTransaction._id}`, {
+                method: 'DELETE'
             })
             if (response.ok) {
                 fetchTransactions()
