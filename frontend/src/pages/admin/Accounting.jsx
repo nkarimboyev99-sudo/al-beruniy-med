@@ -6,7 +6,7 @@ import {
     Wallet, Plus, Search, TrendingUp, Calendar, X, Check,
     ArrowUpRight, ArrowDownRight, BarChart3, CreditCard,
     Banknote, ChevronLeft, ChevronRight, Download, Clock,
-    Edit2, Trash2, AlertTriangle, Table2, BarChart2
+    Edit2, Trash2, AlertTriangle, Table2, BarChart2, CheckSquare
 } from 'lucide-react'
 import { apiFetch } from '../../config/api'
 import './DataManagement.css'
@@ -42,6 +42,7 @@ function Accounting() {
     const [editError, setEditError] = useState('')
     const [editSuccess, setEditSuccess] = useState('')
 
+    const [selectionMode, setSelectionMode] = useState(false)
     const [selectedIds, setSelectedIds] = useState([])
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
     const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false)
@@ -166,6 +167,7 @@ function Accounting() {
             })
             if (response.ok) {
                 setSelectedIds([])
+                setSelectionMode(false)
                 setShowBulkDeleteModal(false)
                 fetchTransactions()
             } else {
@@ -647,30 +649,72 @@ function Accounting() {
                             </button>
                         </div>
 
-                        {selectedIds.length > 0 && (
+                        {!selectionMode ? (
                             <button
-                                className="btn btn-danger"
-                                onClick={() => setShowBulkDeleteModal(true)}
+                                className="btn btn-secondary"
+                                onClick={() => setSelectionMode(true)}
                                 style={{
-                                    background: '#ef4444',
-                                    color: '#fff',
-                                    border: 'none',
-                                    padding: '8px 16px',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
+                                    padding: '7px 14px',
+                                    borderRadius: '8px',
+                                    border: '1.5px solid #cbd5e1',
+                                    background: '#fff',
+                                    color: '#1e293b',
                                     fontWeight: 600,
+                                    cursor: 'pointer',
                                     fontSize: '0.85rem'
                                 }}
                             >
-                                <Trash2 size={16} /> Tanlanganlarni o'chirish ({selectedIds.length})
+                                <CheckSquare size={16} color="#2563eb" /> Tanlash
                             </button>
+                        ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => setShowBulkDeleteModal(true)}
+                                    disabled={selectedIds.length === 0}
+                                    style={{
+                                        background: selectedIds.length > 0 ? '#ef4444' : '#f87171',
+                                        color: '#fff',
+                                        border: 'none',
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        cursor: selectedIds.length > 0 ? 'pointer' : 'not-allowed',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontWeight: 600,
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    <Trash2 size={16} /> Tanlanganlarni o'chirish ({selectedIds.length})
+                                </button>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => { setSelectionMode(false); setSelectedIds([]) }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '8px 14px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #cbd5e1',
+                                        background: '#f1f5f9',
+                                        color: '#475569',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    <X size={16} /> Bekor qilish
+                                </button>
+                            </div>
                         )}
 
                         <div style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500, marginLeft: 'auto' }}>
-                            {selectedIds.length > 0 && <span style={{ color: '#ef4444', fontWeight: 700, marginRight: 8 }}>Tanlangan: {selectedIds.length} ta |</span>}
+                            {selectionMode && selectedIds.length > 0 && <span style={{ color: '#ef4444', fontWeight: 700, marginRight: 8 }}>Tanlangan: {selectedIds.length} ta |</span>}
                             Jami: <b style={{ color: '#111827' }}>{filteredTransactions.length}</b> ta
                         </div>
                     </div>
@@ -722,15 +766,17 @@ function Accounting() {
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th style={{ width: 40, textAlign: 'center' }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={paginatedTransactions.length > 0 && paginatedTransactions.every(t => selectedIds.includes(t._id))}
-                                                onChange={toggleSelectAll}
-                                                style={{ cursor: 'pointer', width: 16, height: 16, accentColor: '#2563eb' }}
-                                                title="Barchasini tanlash / bekor qilish"
-                                            />
-                                        </th>
+                                        {selectionMode && (
+                                            <th style={{ width: 40, textAlign: 'center' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={paginatedTransactions.length > 0 && paginatedTransactions.every(t => selectedIds.includes(t._id))}
+                                                    onChange={toggleSelectAll}
+                                                    style={{ cursor: 'pointer', width: 16, height: 16, accentColor: '#2563eb' }}
+                                                    title="Barchasini tanlash / bekor qilish"
+                                                />
+                                            </th>
+                                        )}
                                         <th>#</th>
                                         <th>Sana</th>
                                         <th>Turi</th>
@@ -746,14 +792,16 @@ function Accounting() {
                                         const isSelected = selectedIds.includes(t._id);
                                         return (
                                             <tr key={t._id} style={{ background: isSelected ? '#eff6ff' : undefined }}>
-                                                <td style={{ textAlign: 'center' }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={() => toggleSelectOne(t._id)}
-                                                        style={{ cursor: 'pointer', width: 16, height: 16, accentColor: '#2563eb' }}
-                                                    />
-                                                </td>
+                                                {selectionMode && (
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleSelectOne(t._id)}
+                                                            style={{ cursor: 'pointer', width: 16, height: 16, accentColor: '#2563eb' }}
+                                                        />
+                                                    </td>
+                                                )}
                                                 <td style={{ color: '#9ca3af', fontWeight: 500 }}>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
                                                 <td style={{ whiteSpace: 'nowrap' }}>
                                                     {new Date(t.date).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })}
