@@ -15,6 +15,7 @@ import {
     MapPin,
     Clock
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DoctorPages.css'
 
 function DiagnosisPage() {
@@ -68,13 +69,11 @@ function DiagnosisPage() {
 
     const fetchData = async () => {
         try {
-            const token = localStorage.getItem('token')
-
             const [patientsRes, diagnosesRes, medicinesRes, inventoryRes] = await Promise.all([
-                fetch('/api/patients', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/diagnoses', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/medicines', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/inventory', { headers: { 'Authorization': `Bearer ${token}` } })
+                apiFetch('/api/patients'),
+                apiFetch('/api/diagnoses'),
+                apiFetch('/api/medicines'),
+                apiFetch('/api/inventory')
             ])
 
             if (patientsRes.ok) {
@@ -111,13 +110,11 @@ function DiagnosisPage() {
         }
 
         try {
-            const token = localStorage.getItem('token')
             // Birinchi analizni saqlash (backend uchun)
-            const response = await fetch(`/api/patients/${selectedPatient._id}/diagnosis`, {
+            const response = await apiFetch(`/api/patients/${selectedPatient._id}/diagnosis`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     diagnosis: formData.selectedDiagnoses[0]?.id,

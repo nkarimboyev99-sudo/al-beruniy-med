@@ -4,6 +4,7 @@ import {
     ClipboardList, Search, Calendar,
     Phone, Eye
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import '../admin/DataManagement.css'
 
 const PAGE_SIZE = 25
@@ -20,10 +21,7 @@ function DoctorAnalyses() {
 
     const fetchDiagnoses = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/patient-diagnoses/my', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch('/api/patient-diagnoses/my')
             if (res.ok) setDiagnoses(await res.json())
         } catch (e) {
             console.error(e)

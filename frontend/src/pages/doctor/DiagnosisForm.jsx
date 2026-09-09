@@ -6,6 +6,7 @@ import {
     CreditCard, Banknote, Building2, ChevronRight,
     CheckSquare, Square, Layers, Search, X
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DiagnosisForm.css'
 import logoSrc from '../../logo/logo.png'
 
@@ -74,7 +75,7 @@ function DiagnosisForm() {
             const isNewMode = searchParams.get('new') === '1'
             let activeEditId = editDiagnosisId;
             if (!activeEditId && !isNewMode) {
-                const patDiagRes = await fetch(`/api/patient-diagnoses/patient/${patientId}`, { headers });
+                const patDiagRes = await apiFetch(`/api/patient-diagnoses/patient/${patientId}`);
                 if (patDiagRes.ok) {
                     const diags = await patDiagRes.json();
                     const activeDiag = diags.find(d => !(d.results?.isConfirmed === true || (d.results?.isConfirmed === undefined && !!d.results?.savedAt)));
@@ -86,12 +87,12 @@ function DiagnosisForm() {
             }
 
             const requests = [
-                fetch(`/api/patients/${patientId}`, { headers }),
-                fetch('/api/diagnoses', { headers }),
-                fetch('/api/categories', { headers }),
+                apiFetch(`/api/patients/${patientId}`),
+                apiFetch('/api/diagnoses'),
+                apiFetch('/api/categories'),
             ]
             if (activeEditId) {
-                requests.push(fetch(`/api/patient-diagnoses/${activeEditId}`, { headers }))
+                requests.push(apiFetch(`/api/patient-diagnoses/${activeEditId}`))
             }
             const results = await Promise.all(requests)
             const [patRes, diagRes, catRes, editRes] = results
@@ -325,14 +326,12 @@ function DiagnosisForm() {
     }, [totalDiagnoses, paymentData.discountPercent])
 
     const handleSubmit = async () => {
+        if (saving) return
         if (formData.diagnoses.length === 0 && Object.keys(hiddenCatSelections).length === 0) {
             setError('Kamida bitta analiz tanlang'); return
         }
         setSaving(true); setError('')
         try {
-            const token = localStorage.getItem('token')
-            const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
-
             const diagnosisNames = formData.diagnoses.map(d => d.diagnosisName).join(', ')
             const hiddenCatEntries = Object.entries(hiddenCatSelections).map(([catId, price]) => {
                 const cat = categoriesList.find(c => c._id === catId)
@@ -368,7 +367,11 @@ function DiagnosisForm() {
                 ? `/api/patient-diagnoses/${editDiagnosisId}`
                 : '/api/patient-diagnoses'
             const method = editDiagnosisId ? 'PUT' : 'POST'
-            const res = await fetch(url, { method, headers, body: JSON.stringify(body) })
+            const res = await apiFetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
             const data = await res.json()
             if (!res.ok) { setError(data.message || 'Xatolik'); return }
 

@@ -5,6 +5,7 @@ import {
     User, Phone, Calendar, FileText, ChevronRight,
     Stethoscope, Search, UserCheck
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './AddPatientPage.css'
 
 function AddPatientPage() {
@@ -30,10 +31,7 @@ function AddPatientPage() {
     useEffect(() => {
         const fetchReferring = async () => {
             try {
-                const token = localStorage.getItem('token')
-                const res = await fetch('/api/referring-doctors', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
+                const res = await apiFetch('/api/referring-doctors')
                 if (res.ok) setReferringDoctors(await res.json())
             } catch (e) {}
         }
@@ -82,10 +80,7 @@ function AddPatientPage() {
         if (!query || query.length < 2) { setSuggestions([]); setShowSuggestions(false); return }
         setSearchLoading(true)
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/patients/search/autocomplete?q=${encodeURIComponent(query)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch(`/api/patients/search/autocomplete?q=${encodeURIComponent(query)}`)
             if (res.ok) {
                 const data = await res.json()
                 setSuggestions(data)
@@ -119,16 +114,16 @@ function AddPatientPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (saving) return
         if (!formData.fullName.trim()) { setError("Ism familiya kiritilishi shart"); return }
         if (!formData.birthDate) { setError("Tug'ilgan sana kiritilishi shart"); return }
         if (formData.phone.length < 17) { setError("Telefon raqami to'liq kiritilishi shart"); return }
         setSaving(true); setError('')
 
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/patients', {
+            const res = await apiFetch('/api/patients', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
             const data = await res.json()

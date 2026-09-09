@@ -16,6 +16,7 @@ import {
     ChevronRight,
     Droplet
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DoctorPages.css'
 
 function PatientList() {
@@ -31,10 +32,7 @@ function PatientList() {
 
     const fetchPatients = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/patients', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/patients')
 
             if (response.ok) {
                 const data = await response.json()

@@ -13,6 +13,7 @@ import {
     AlertCircle,
     FileText
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DoctorPages.css'
 
 function DoctorHome() {
@@ -36,10 +37,7 @@ function DoctorHome() {
 
     const fetchData = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/patients', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/patients')
 
             if (response.ok) {
                 const patients = await response.json()

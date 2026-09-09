@@ -10,6 +10,7 @@ import {
     Check,
     AlertCircle
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DoctorPages.css'
 
 function AddPatient() {
@@ -48,12 +49,7 @@ function AddPatient() {
         debounceRef.current = setTimeout(async () => {
             setSearchLoading(true)
             try {
-                const token = localStorage.getItem('token')
-                const response = await fetch(`/api/patients/search/autocomplete?q=${encodeURIComponent(formData.fullName)}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
+                const response = await apiFetch(`/api/patients/search/autocomplete?q=${encodeURIComponent(formData.fullName)}`)
                 const data = await response.json()
                 setSuggestions(data)
                 setShowSuggestions(data.length > 0)
@@ -84,16 +80,15 @@ function AddPatient() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (loading) return
         setLoading(true)
         setError('')
 
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/patients', {
+            const response = await apiFetch('/api/patients', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     ...formData,
@@ -122,12 +117,8 @@ function AddPatient() {
     // Create and print queue ticket for a patient
     const createAndPrintQueueTicket = async (patientId, patientData) => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch(`/api/queue-tickets/${patientId}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const response = await apiFetch(`/api/queue-tickets/${patientId}`, {
+                method: 'POST'
             })
 
             if (response.ok) {

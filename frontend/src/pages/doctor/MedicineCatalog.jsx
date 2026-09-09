@@ -6,6 +6,7 @@ import {
     AlertTriangle,
     X
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DoctorPages.css'
 
 function MedicineCatalog() {
@@ -21,10 +22,7 @@ function MedicineCatalog() {
 
     const fetchMedicines = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/medicines', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/medicines')
 
             if (response.ok) {
                 const data = await response.json()

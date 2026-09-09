@@ -5,6 +5,7 @@ import {
     Phone, Calendar, User, FileText,
     Save, Check, X, Stethoscope, ClipboardList, Printer, AlertTriangle, AlertCircle, Pencil
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import '../admin/DataManagement.css'
 import '../admin/rfp.css'
 
@@ -63,16 +64,14 @@ function RegistratorPatients() {
 
     const fetchDiagnosesList = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/diagnoses', { headers: { 'Authorization': `Bearer ${token}` } })
+            const res = await apiFetch('/api/diagnoses')
             if (res.ok) setDiagnosesList(await res.json())
         } catch (e) { console.error(e) }
     }
 
     const fetchCategoriesList = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/categories', { headers: { 'Authorization': `Bearer ${token}` } })
+            const res = await apiFetch('/api/categories')
             if (res.ok) setCategoriesList(await res.json())
         } catch (e) { console.error(e) }
     }
@@ -797,8 +796,7 @@ function RegistratorPatients() {
 
     const handlePrintLastResult = async (patient) => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/patient-diagnoses/patient/${patient._id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+            const res = await apiFetch(`/api/patient-diagnoses/patient/${patient._id}`)
             if (res.ok) {
                 const diagnoses = await res.json()
                 const savedDiags = diagnoses.filter(isDiagnosisResultConfirmed).sort((a, b) => {
@@ -825,10 +823,7 @@ function RegistratorPatients() {
         setPrintModalLoading(true)
         setShowPrintModal(true)
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/patient-diagnoses/patient/${patient._id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch(`/api/patient-diagnoses/patient/${patient._id}`)
             if (res.ok) {
                 const diagnoses = await res.json()
                 diagnoses.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
@@ -892,10 +887,7 @@ function RegistratorPatients() {
 
     const fetchPatients = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/patients', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch('/api/patients')
             if (res.ok) setPatients(await res.json())
         } catch (e) {
             console.error(e)
@@ -906,10 +898,7 @@ function RegistratorPatients() {
 
     const fetchReferringDoctors = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/referring-doctors', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch('/api/referring-doctors')
             if (res.ok) setReferringDoctors(await res.json())
         } catch (e) { console.error(e) }
     }
@@ -917,10 +906,7 @@ function RegistratorPatients() {
     const fetchPatientDiagnoses = async (patientId) => {
         setDiagnosesLoading(true)
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/patient-diagnoses/patient/${patientId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch(`/api/patient-diagnoses/patient/${patientId}`)
             if (res.ok) setPatientDiagnoses(await res.json())
             else setPatientDiagnoses([])
         } catch (e) {
@@ -935,10 +921,7 @@ function RegistratorPatients() {
         if (!query || query.length < 2) { setSuggestions([]); return }
         setSearchLoading(true)
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/patients/search/autocomplete?q=${encodeURIComponent(query)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch(`/api/patients/search/autocomplete?q=${encodeURIComponent(query)}`)
             if (res.ok) setSuggestions(await res.json())
         } catch (e) {
             console.error(e)
@@ -985,12 +968,11 @@ function RegistratorPatients() {
         setError('')
         setSuccess('')
         try {
-            const token = localStorage.getItem('token')
             const url = editingPatient ? `/api/patients/${editingPatient._id}` : '/api/patients'
             const method = editingPatient ? 'PUT' : 'POST'
-            const res = await fetch(url, {
+            const res = await apiFetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
             const data = await res.json()
@@ -1031,10 +1013,7 @@ function RegistratorPatients() {
         // Analiz tahrirlash uchun bemorning analizlarini yuklash
         setEditAnalysisList([])
         setEditAnalysisLoading(true)
-        const token = localStorage.getItem('token')
-        fetch(`/api/patient-diagnoses/patient/${patient._id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
+        apiFetch(`/api/patient-diagnoses/patient/${patient._id}`)
             .then(res => res.ok ? res.json() : [])
             .then(data => setEditAnalysisList(data))
             .catch(() => setEditAnalysisList([]))

@@ -23,6 +23,7 @@ import {
     ArrowLeft,
     ChevronDown
 } from 'lucide-react'
+import { apiFetch } from '../../config/api'
 import './DataManagement.css'
 import './rfp.css'
 import '../doctor/DiagnosisForm.css'
@@ -150,10 +151,7 @@ function PatientManagement({ readOnly = false }) {
 
     const fetchReferringDoctors = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const res = await fetch('/api/referring-doctors', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const res = await apiFetch('/api/referring-doctors')
             if (res.ok) setReferringDoctors(await res.json())
         } catch (e) { console.error(e) }
     }
@@ -175,10 +173,7 @@ function PatientManagement({ readOnly = false }) {
         try {
             setLoading(true)
             setLoadError('')
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/patients', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/patients')
 
             if (!response.ok) {
                 throw new Error(`Bemorlarni yuklashda xatolik: ${response.status}`)
@@ -196,10 +191,7 @@ function PatientManagement({ readOnly = false }) {
 
     const fetchDiagnosesList = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/diagnoses', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/diagnoses')
             if (response.ok) {
                 const data = await response.json()
                 setDiagnosesList(data)
@@ -211,10 +203,7 @@ function PatientManagement({ readOnly = false }) {
 
     const fetchCategoriesList = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/categories', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/categories')
             if (response.ok) {
                 const data = await response.json()
                 setCategoriesList(data)
@@ -228,10 +217,7 @@ function PatientManagement({ readOnly = false }) {
 
     const fetchMedicinesList = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/medicines', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/medicines')
             if (response.ok) {
                 const data = await response.json()
                 setMedicinesList(data)
@@ -243,10 +229,7 @@ function PatientManagement({ readOnly = false }) {
 
     const fetchInventory = async () => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('/api/inventory', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const response = await apiFetch('/api/inventory')
             if (response.ok) {
                 const data = await response.json()
                 setInventory(data)
